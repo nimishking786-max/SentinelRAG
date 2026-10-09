@@ -1,0 +1,67 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-[#f4f7fb] dark:bg-vault-bg text-slate-800 dark:text-slate-100 transition-colors duration-200 antialiased selection:bg-indigo-500 selection:text-white font-sans;
+    min-height: 100vh;
+  }
+}
+
+@layer components {
+  /* Neomorphic Clay Cards with Dark Mode Glass */
+  .clay-card {
+    @apply bg-white dark:bg-vault-surface rounded-3xl shadow-clay-out dark:shadow-none dark:border dark:border-vault-border transition-all duration-300;
+  }
+  
+  .clay-card-inset {
+    @apply bg-[#f0f3f8] dark:bg-vault-card rounded-3xl shadow-clay-in dark:shadow-inner dark:border dark:border-vault-border/60 transition-all duration-300;
+  }
+
+  .glass-panel {
+    @apply backdrop-blur-xl bg-white/70 dark:bg-vault-surface/80 border border-white/60 dark:border-vault-border rounded-3xl shadow-xl transition-all;
+  }
+
+  /* Buttons */
+  .clay-btn {
+    @apply bg-white dark:bg-vault-card px-5 py-2.5 rounded-2xl shadow-clay-button dark:shadow-none dark:border dark:border-vault-border font-semibold text-slate-700 dark:text-slate-200 transition-all duration-200 active:shadow-clay-button-active hover:-translate-y-0.5 active:translate-y-0 hover:bg-slate-50 dark:hover:bg-slate-800/80 disabled:opacity-50 disabled:pointer-events-none;
+  }
+  
+  .clay-btn-primary {
+    @apply bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white px-6 py-2.5 rounded-2xl shadow-clay-button dark:shadow-vault-glow font-semibold transition-all duration-200 active:shadow-clay-button-active hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:pointer-events-none;
+  }
+
+  .clay-btn-danger {
+    @apply bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white px-5 py-2 rounded-2xl shadow-md font-semibold transition-all duration-200 active:scale-95 disabled:opacity-50;
+  }
+
+  /* Inputs */
+  .clay-input {
+    @apply bg-[#f0f3f8] dark:bg-vault-card text-slate-800 dark:text-slate-100 w-full px-4 py-3 rounded-2xl shadow-clay-in dark:shadow-inner outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all border border-transparent dark:border-vault-border/80 placeholder:text-slate-400 dark:placeholder:text-slate-500;
+  }
+
+  /* Cyber Glow Badges */
+  .badge-tag {
+    @apply px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider inline-flex items-center gap-1.5 transition-all;
+  }
+}
+
+/* Custom sleek scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.4);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(99, 102, 241, 0.6);
+}

@@ -1,0 +1,11 @@
+# Frontend specific gitignore
+node_modules/
+dist/
+dist-ssr/
+*.local
+.env
+.env.*
+!.env.example
+*.log
+*.timestamp-*.mjs
+vite.config.ts.timestamp-*
