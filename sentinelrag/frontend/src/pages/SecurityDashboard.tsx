@@ -14,7 +14,8 @@ import {
   RotateCcw, 
   Sparkles, 
   Lock, 
-  Search 
+  Search,
+  Trash2
 } from 'lucide-react';
 import { 
   PieChart, 
@@ -111,6 +112,17 @@ export const SecurityDashboard = () => {
       await refreshAvailableUsers();
     } catch (err: any) {
       alert(err?.response?.data?.detail || 'Could not update user role');
+    }
+  };
+
+  const deleteUser = async (userId: string, name: string) => {
+    if (!window.confirm(`Delete ${name}'s account? This cannot be undone.`)) return;
+    try {
+      await api.delete(`/admin/users/${userId}`);
+      setUsers((current) => current.filter((user) => user.id !== userId));
+      await refreshAvailableUsers();
+    } catch (err: any) {
+      alert(err?.response?.data?.detail || 'Could not delete user');
     }
   };
 
@@ -215,14 +227,26 @@ export const SecurityDashboard = () => {
                   <p className="text-sm font-bold">{user.full_name}</p>
                   <p className="text-xs text-slate-500">{user.email} · {user.department}</p>
                 </div>
-                <ThemedSelect
-                  value={user.role}
-                  onChange={(role) => updateUserRole(user.id, role)}
-                  disabled={user.id === currentUser.id}
-                  title={user.id === currentUser.id ? 'You cannot remove your own admin role' : 'Assign role'}
-                  options={['ADMIN', 'HR_MANAGER', 'FINANCE_MANAGER', 'EMPLOYEE'].map((role) => ({ value: role, label: role }))}
-                  aria-label={`Role for ${user.full_name}`}
-                />
+                <div className="flex items-center gap-2">
+                  <ThemedSelect
+                    value={user.role}
+                    onChange={(role) => updateUserRole(user.id, role)}
+                    disabled={user.id === currentUser.id}
+                    title={user.id === currentUser.id ? 'You cannot remove your own admin role' : 'Assign role'}
+                    options={['ADMIN', 'HR_MANAGER', 'FINANCE_MANAGER', 'EMPLOYEE'].map((role) => ({ value: role, label: role }))}
+                    aria-label={`Role for ${user.full_name}`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => deleteUser(user.id, user.full_name)}
+                    disabled={user.id === currentUser.id}
+                    title={user.id === currentUser.id ? 'You cannot delete your own account' : `Delete ${user.full_name}`}
+                    aria-label={`Delete ${user.full_name}`}
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-rose-300 text-rose-600 transition-colors hover:bg-rose-50 disabled:pointer-events-none disabled:opacity-40 dark:border-rose-900 dark:text-rose-400 dark:hover:bg-rose-950/40"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
               </div>
             ))}
           </div>
