@@ -125,6 +125,26 @@
     color: #ffc766;
   }
 
+  .modal-scroll-area {
+    scrollbar-width: auto;
+    scrollbar-color: #697386 transparent;
+  }
+
+  .modal-scroll-area::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  .modal-scroll-area::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .modal-scroll-area::-webkit-scrollbar-thumb {
+    border: 2px solid transparent;
+    border-radius: 999px;
+    background-clip: padding-box;
+    background-color: #697386;
+  }
+
   .badge-tag {
     @apply inline-flex items-center gap-1.5 rounded-full border border-white/70 bg-white/50 px-3 py-1 text-xs font-bold uppercase tracking-wider text-slate-700 shadow-sm backdrop-blur-xl transition-all;
   }

@@ -408,9 +408,9 @@ export const DocumentManagement = () => {
 
       {/* Ingest Document Modal */}
       {uploadModalOpen && (
-        <div className="fixed inset-0 overflow-y-auto overscroll-contain bg-black/60 backdrop-blur-sm p-4 z-50 animate-in fade-in">
-          <div className="flex min-h-full items-center justify-center">
-          <div className="clay-card flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden border border-slate-200 dark:border-vault-border">
+        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden overscroll-none bg-black/60 p-4 backdrop-blur-sm animate-in fade-in">
+          <div className="flex max-h-full w-full items-center justify-center">
+          <div className="clay-card flex max-h-[calc(100vh-2rem)] w-full max-w-lg flex-col overflow-hidden border border-slate-200 dark:border-vault-border">
             <div className="flex items-center justify-between border-b border-slate-100 px-6 pb-3 pt-6 dark:border-vault-border md:px-8 md:pt-8">
               <div className="flex items-center gap-2 font-bold text-lg text-slate-900 dark:text-white">
                 <Upload className="w-5 h-5 text-indigo-600 dark:text-cyan-400" />
@@ -431,7 +431,12 @@ export const DocumentManagement = () => {
               </div>
             )}
 
-            <form onSubmit={handleUploadSubmit} className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain px-6 pb-6 pt-5 text-xs md:px-8 md:pb-8">
+            <form
+              onSubmit={handleUploadSubmit}
+              onWheel={(event) => event.stopPropagation()}
+              onTouchMove={(event) => event.stopPropagation()}
+              className="modal-scroll-area min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain px-6 pb-6 pt-5 text-xs md:px-8 md:pb-8"
+            >
               <div>
                 <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
                   Document Title *
