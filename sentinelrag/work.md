@@ -97,7 +97,8 @@ Available behavior includes:
 - Filtering the document list by available UI filters.
 - Opening an authorized document to fetch and display its indexed chunks.
 - Preventing unauthorized users from inspecting document chunks.
-- Deleting documents when the current user has the required permission.
+- Showing a delete action to the uploader or an administrator.
+- Enforcing uploader-or-administrator ownership checks before deletion.
 
 The current implementation displays parsed/indexed document chunks in the
 application. It does not currently provide a separate original-file download
@@ -113,7 +114,9 @@ The backend chat flow currently:
 2. Creates an embedding for the query.
 3. Applies role, department, sensitivity, and document-permission checks
    before retrieval.
-4. Searches only authorized document chunks.
+4. Searches only authorized document chunks. The chat UI can optionally
+   select one authorized document, and the backend restricts retrieval to that
+   document before vector or keyword search.
 5. Generates an answer from the authorized chunks.
 6. Returns citations containing the document title, page number, source type,
    and a content snippet.
@@ -123,6 +126,10 @@ The backend chat flow currently:
 If a query targets a restricted document, the response reports that access
 was denied and explains that the restricted content was filtered before it
 reached the AI context.
+
+The chat page no longer includes preset queries. Users choose an authorized
+document from the selector above the conversation and ask their own question,
+or leave the selector on all authorized documents.
 
 ## 6. Prompt injection protection
 

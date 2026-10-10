@@ -27,6 +27,7 @@ interface DocumentItem {
   sensitivity: 'PUBLIC' | 'INTERNAL' | 'CONFIDENTIAL' | 'RESTRICTED';
   allowed_roles?: string;
   is_accessible?: boolean;
+  can_delete?: boolean;
   chunk_count?: number;
   created_at?: string;
 }
@@ -213,7 +214,7 @@ export const DocumentManagement = () => {
       await api.delete(`/documents/${docId}`);
       fetchDocuments();
     } catch (err: any) {
-      alert(getApiErrorMessage(err, "Only ADMIN role can purge vault documents."));
+      alert(getApiErrorMessage(err, "Only the uploader or an administrator can delete this document."));
     }
   };
 
@@ -325,12 +326,12 @@ export const DocumentManagement = () => {
                     : 'border-red-200/60 dark:border-red-950/40 bg-slate-50/50 dark:bg-vault-card/40 opacity-90'
                 }`}
               >
-                {/* Delete button (Admin only) */}
-                {currentUser?.role === 'ADMIN' && (
+                {/* Uploaders and administrators can remove documents. */}
+                {doc.can_delete && (
                   <button
                     onClick={() => handleDelete(doc.id)}
                     className="absolute top-4 right-4 p-2 text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
-                    title="Purge Document"
+                    title="Delete Document"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
