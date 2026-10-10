@@ -26,6 +26,8 @@ eggs/
 .eggs/
 lib/
 lib64/
+!sentinelrag/frontend/src/lib/
+!sentinelrag/frontend/src/lib/*.ts
 parts/
 sdist/
 var/
