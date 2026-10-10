@@ -255,16 +255,16 @@ export const Navbar = () => {
       )}
       {authMode && (
         <div className="fixed inset-0 z-[60] bg-black/60 flex items-center justify-center p-4">
-          <form onSubmit={submitAuth} className="clay-card bg-white dark:bg-vault-surface w-full max-w-md p-6 space-y-4">
+          <form onSubmit={submitAuth} className="shadcn-card bg-white dark:bg-vault-surface w-full max-w-md p-6 space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-bold">{authMode === 'login' ? 'Sign in to SentinelRAG' : 'Create your account'}</h2>
               <button type="button" onClick={() => setAuthMode(null)} className="text-slate-400">✕</button>
             </div>
             {authError && <div className="rounded-xl bg-red-50 text-red-700 p-3 text-xs">{authError}</div>}
             {authMode === 'register' && (
-              <input required placeholder="Full name" value={authForm.fullName} onChange={(e) => setAuthForm({ ...authForm, fullName: e.target.value })} className="clay-input w-full" />
+              <input required placeholder="Full name" value={authForm.fullName} onChange={(e) => setAuthForm({ ...authForm, fullName: e.target.value })} className="shadcn-input w-full" />
             )}
-            <input required type="email" placeholder="Email" value={authForm.email} onChange={(e) => setAuthForm({ ...authForm, email: e.target.value })} className="clay-input w-full" />
+            <input required type="email" placeholder="Email" value={authForm.email} onChange={(e) => setAuthForm({ ...authForm, email: e.target.value })} className="shadcn-input w-full" />
             <PasswordInput
               required
               minLength={8}
@@ -273,7 +273,7 @@ export const Navbar = () => {
               onChange={(password) => setAuthForm({ ...authForm, password })}
               autoComplete={authMode === 'login' ? 'current-password' : 'new-password'}
             />
-            <button disabled={authSubmitting} className="neubrutalist-btn-primary w-full">
+            <button disabled={authSubmitting} className="shadcn-btn-primary w-full">
               {authSubmitting ? 'Please wait...' : authMode === 'login' ? 'Sign in' : 'Create account'}
             </button>
             <button type="button" onClick={() => setAuthMode(authMode === 'login' ? 'register' : 'login')} className="w-full text-xs text-indigo-600">

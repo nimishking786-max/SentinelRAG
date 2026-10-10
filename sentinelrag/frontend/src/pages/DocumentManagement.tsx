@@ -250,7 +250,7 @@ export const DocumentManagement = () => {
         <div className="flex items-center gap-3 w-full sm:w-auto">
           <button
             onClick={() => setUploadModalOpen(true)}
-            className="neubrutalist-btn-primary flex items-center justify-center gap-2 text-sm w-full sm:w-auto"
+            className="shadcn-btn-primary flex items-center justify-center gap-2 text-sm w-full sm:w-auto"
           >
             <Plus className="w-4 h-4" />
             Ingest Document
@@ -308,7 +308,7 @@ export const DocumentManagement = () => {
           Loading documents from vault...
         </div>
       ) : filteredDocs.length === 0 ? (
-        <div className="clay-card p-12 text-center text-slate-400 space-y-3">
+        <div className="shadcn-card p-12 text-center text-slate-400 space-y-3">
           <FileText className="w-12 h-12 mx-auto text-slate-300 dark:text-slate-600" />
           <p className="font-semibold text-base">No documents match the active filter criteria.</p>
         </div>
@@ -320,7 +320,7 @@ export const DocumentManagement = () => {
             return (
               <div 
                 key={doc.id}
-                className={`clay-card p-6 flex flex-col justify-between gap-5 relative group border transition-all ${
+                className={`shadcn-card p-6 flex flex-col justify-between gap-5 relative group border transition-all ${
                   isAccessible 
                     ? 'border-slate-200/80 dark:border-vault-border hover:border-indigo-400 dark:hover:border-cyan-500' 
                     : 'border-red-200/60 dark:border-red-950/40 bg-slate-50/50 dark:bg-vault-card/40 opacity-90'
@@ -410,7 +410,7 @@ export const DocumentManagement = () => {
       {uploadModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden overscroll-none bg-black/60 p-4 backdrop-blur-sm animate-in fade-in">
           <div className="flex max-h-full w-full items-center justify-center">
-          <div className="clay-card flex max-h-[calc(100vh-2rem)] w-full max-w-lg flex-col overflow-hidden border border-slate-200 dark:border-vault-border">
+          <div className="shadcn-card flex max-h-[calc(100vh-2rem)] w-full max-w-lg flex-col overflow-hidden border border-slate-200 dark:border-vault-border">
             <div className="flex items-center justify-between border-b border-slate-100 px-6 pb-3 pt-6 dark:border-vault-border md:px-8 md:pt-8">
               <div className="flex items-center gap-2 font-bold text-lg text-slate-900 dark:text-white">
                 <Upload className="w-5 h-5 text-indigo-600 dark:text-cyan-400" />
@@ -447,7 +447,7 @@ export const DocumentManagement = () => {
                   value={uploadTitle}
                   onChange={(e) => setUploadTitle(e.target.value)}
                   placeholder="e.g., FY2026_Engineering_Roadmap.pdf"
-                  className="clay-input technical-select text-xs"
+                  className="shadcn-input technical-select text-xs"
                 />
               </div>
 
@@ -541,7 +541,7 @@ export const DocumentManagement = () => {
                   value={uploadTextContent}
                   onChange={(e) => setUploadTextContent(e.target.value)}
                   placeholder="Paste raw documentation, policies, or report excerpts here..."
-                  className="clay-input text-xs resize-none"
+                  className="shadcn-input text-xs resize-none"
                 />
               </div>
 
@@ -549,14 +549,14 @@ export const DocumentManagement = () => {
                 <button
                   type="button"
                   onClick={() => setUploadModalOpen(false)}
-                  className="neubrutalist-btn text-xs"
+                  className="shadcn-btn text-xs"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={uploading}
-                  className="neubrutalist-btn-primary text-xs flex items-center gap-2"
+                  className="shadcn-btn-primary text-xs flex items-center gap-2"
                 >
                   {uploading ? "Chunking & Embedding..." : "Ingest into Vault"}
                 </button>
@@ -570,7 +570,7 @@ export const DocumentManagement = () => {
       {/* Chunk Inspector Modal */}
       {inspectorDoc && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in">
-          <div className="clay-card p-6 md:p-8 max-w-2xl w-full space-y-4 border border-slate-200 dark:border-vault-border max-h-[85vh] flex flex-col">
+          <div className="shadcn-card p-6 md:p-8 max-w-2xl w-full space-y-4 border border-slate-200 dark:border-vault-border max-h-[85vh] flex flex-col">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-vault-border">
               <div className="flex items-center gap-2">
                 <Layers className="w-5 h-5 text-indigo-600 dark:text-cyan-400" />
@@ -631,7 +631,7 @@ export const DocumentManagement = () => {
             <div className="pt-2 flex justify-end">
               <button
                 onClick={() => setInspectorDoc(null)}
-                className="neubrutalist-btn text-xs"
+                className="shadcn-btn text-xs"
               >
                 Close Inspector
               </button>

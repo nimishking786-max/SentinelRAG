@@ -50,32 +50,32 @@
 }
 
 @layer components {
-  .clay-card {
-    @apply rounded-[1.75rem] border border-white/70 bg-white/45 shadow-[0_20px_60px_rgba(116,91,160,0.18),inset_0_1px_0_rgba(255,255,255,0.9)] transition-all duration-300;
+  .shadcn-card {
+    @apply rounded-2xl border border-slate-200/80 bg-white text-slate-900 shadow-sm transition-colors duration-200 dark:border-vault-border dark:bg-vault-surface dark:text-slate-100;
   }
   
-  .clay-card-inset {
-    @apply rounded-[1.5rem] border border-white/60 bg-white/30 shadow-[inset_0_2px_16px_rgba(105,87,140,0.12)] transition-all duration-300;
+  .shadcn-card-inset {
+    @apply rounded-xl border border-slate-200/80 bg-slate-50 text-slate-900 shadow-sm transition-colors duration-200 dark:border-vault-border dark:bg-vault-card dark:text-slate-100;
   }
 
   .glass-panel {
     @apply rounded-[1.75rem] border border-white/70 bg-white/45 shadow-[0_18px_50px_rgba(106,85,146,0.16),inset_0_1px_0_rgba(255,255,255,0.95)] transition-all;
   }
 
-  .neubrutalist-btn {
-    @apply rounded-[8px] border-2 border-[#FF6A1A] bg-[#202127] px-5 py-2.5 font-semibold text-[#F7F5F2] shadow-[3px_3px_0_#FF6A1A] transition-[transform,box-shadow,background-color] duration-150 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:bg-[#FF6A1A] hover:text-[#171C26] hover:shadow-[5px_5px_0_#D9500D] disabled:pointer-events-none disabled:opacity-50;
+  .shadcn-btn {
+    @apply inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-900 shadow-sm transition-colors duration-200 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF6A1A]/40 disabled:pointer-events-none disabled:opacity-50 dark:border-vault-border dark:bg-vault-card dark:text-slate-100 dark:hover:bg-vault-surface;
   }
   
-  .neubrutalist-btn-primary {
-    @apply rounded-[8px] border-2 border-[#FF6A1A] bg-[#FF6A1A] px-6 py-2.5 font-semibold text-[#171C26] shadow-[3px_3px_0_#D9500D] transition-[transform,box-shadow,background-color] duration-150 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:bg-[#FFC766] hover:shadow-[5px_5px_0_#D9500D] disabled:pointer-events-none disabled:opacity-50;
+  .shadcn-btn-primary {
+    @apply inline-flex items-center justify-center rounded-lg border border-[#FF6A1A] bg-[#FF6A1A] px-4 py-2.5 text-sm font-medium text-[#171C26] shadow-sm transition-colors duration-200 hover:bg-[#FFC766] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF6A1A]/40 disabled:pointer-events-none disabled:opacity-50;
   }
 
-  .neubrutalist-btn-danger {
-    @apply rounded-2xl bg-rose-600 px-5 py-2 font-semibold text-white shadow-lg shadow-rose-400/25 transition-all duration-200 hover:-translate-y-0.5 hover:bg-rose-700 disabled:opacity-50;
+  .shadcn-btn-danger {
+    @apply inline-flex items-center justify-center rounded-lg border border-rose-600 bg-rose-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-colors duration-200 hover:bg-rose-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500/40 disabled:pointer-events-none disabled:opacity-50;
   }
 
-  .clay-input {
-    @apply w-full rounded-2xl border border-white/70 bg-white/45 px-4 py-3 text-slate-800 shadow-[inset_0_2px_10px_rgba(111,88,145,0.08)] outline-none backdrop-blur-xl transition-all placeholder:text-slate-400 focus:border-violet-400/70 focus:ring-4 focus:ring-violet-300/20;
+  .shadcn-input {
+    @apply w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors placeholder:text-slate-400 focus:border-[#FF6A1A] focus:ring-2 focus:ring-[#FF6A1A]/20 dark:border-vault-border dark:bg-vault-card dark:text-slate-100;
   }
 
   .technical-select {
@@ -570,7 +570,7 @@ html:not(.dark) .scroll-performance-surface {
   box-shadow: 0 18px 45px rgba(30, 41, 59, 0.08);
 }
 
-html:not(.dark) .clay-card,
+html:not(.dark) .shadcn-card,
 html:not(.dark) .glass-panel {
   border-color: rgba(148, 163, 184, 0.3);
 }
@@ -648,17 +648,17 @@ html:not(.dark) .technical-feature-card__description {
     linear-gradient(135deg, #211b31 0%, #172735 48%, #30251f 100%);
 }
 
-.dark .clay-card,
+.dark .shadcn-card,
 .dark .glass-panel {
-  background: linear-gradient(135deg, rgba(255,255,255,.18), rgba(255,255,255,.07)) !important;
-  border-color: rgba(255,255,255,.24) !important;
-  box-shadow: 0 22px 60px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.35);
+  background: #202127 !important;
+  border-color: #62636d !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
 }
 
-.dark .clay-card-inset,
-.dark .clay-input {
-  background: rgba(255,255,255,.1) !important;
-  border-color: rgba(255,255,255,.2) !important;
+.dark .shadcn-card-inset,
+.dark .shadcn-input {
+  background: #171c26 !important;
+  border-color: #62636d !important;
   color: #f8fafc;
 }
 
@@ -690,7 +690,7 @@ html:not(.dark) .technical-select-option.is-selected {
   color: #9a5d0b;
 }
 
-.dark .neubrutalist-btn {
+.dark .shadcn-btn {
   background: #202127 !important;
   border-color: #FF6A1A !important;
   color: #F7F5F2;

@@ -30,7 +30,7 @@ export const PasswordInput = ({
         value={value}
         autoComplete={autoComplete}
         onChange={(event) => onChange(event.target.value)}
-        className="clay-input w-full pr-12"
+        className="shadcn-input w-full pr-12"
       />
       <button
         type="button"

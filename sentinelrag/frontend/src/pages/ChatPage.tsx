@@ -276,7 +276,7 @@ export const ChatPage = () => {
       </section>
 
       {/* Chat Messages Log Area */}
-      <div className="clay-card-inset flex-1 p-4 md:p-6 overflow-y-auto min-h-[460px] max-h-[620px] flex flex-col gap-6 rounded-3xl border border-slate-200/60 dark:border-vault-border/80">
+      <div className="shadcn-card-inset flex-1 p-4 md:p-6 overflow-y-auto min-h-[460px] max-h-[620px] flex flex-col gap-6 rounded-3xl border border-slate-200/60 dark:border-vault-border/80">
         {messages.map((msg) => (
           <div
             key={msg.id}
@@ -324,7 +324,7 @@ export const ChatPage = () => {
             ) : (
               /* Assistant Message */
               <div className="flex flex-col gap-3 max-w-[90%] sm:max-w-[85%] w-full">
-                <div className="clay-card p-5 rounded-3xl rounded-tl-sm w-full border border-slate-200/80 dark:border-vault-border relative group">
+                <div className="shadcn-card p-5 rounded-3xl rounded-tl-sm w-full border border-slate-200/80 dark:border-vault-border relative group">
                   <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-100 dark:border-vault-border/60">
                     <div className="flex items-center gap-2">
                       <div className="w-5 h-5 rounded-full bg-gradient-to-tr from-indigo-600 to-cyan-400 flex items-center justify-center text-white text-[10px] font-bold">
@@ -461,7 +461,7 @@ export const ChatPage = () => {
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
             placeholder={`Ask SentinelRAG as ${currentUser?.full_name.split(' ')[0]} (${currentUser?.role})...`}
-            className="clay-input text-sm py-3.5 pl-4 pr-10"
+            className="shadcn-input text-sm py-3.5 pl-4 pr-10"
             disabled={loading}
           />
         </div>
@@ -469,7 +469,7 @@ export const ChatPage = () => {
         <button
           onClick={() => handleSend()}
           disabled={loading || !query.trim()}
-          className="neubrutalist-btn-primary !px-6 !py-3.5 rounded-[8px] flex items-center justify-center gap-2"
+          className="shadcn-btn-primary !px-6 !py-3.5 rounded-[8px] flex items-center justify-center gap-2"
         >
           <Send className="w-4 h-4" />
           <span className="hidden sm:inline">Send</span>

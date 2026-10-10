@@ -19,6 +19,9 @@ The project currently has a React/Vite frontend with these pages:
 - **Profile**: Shows the signed-in user's identity, role, department, and
   email, and allows the user to upload a profile image.
 - **Theme switching**: Supports dark and light mode in the frontend.
+- **Shadcn-style UI**: Shared cards, inputs, and buttons use flat,
+  accessible shadcn-style primitives with the existing graphite and amber
+  theme. The former clay/neubrutalist UI layer has been removed.
 
 ## 2. Demo user authentication
 

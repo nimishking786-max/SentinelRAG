@@ -38,7 +38,7 @@ const AuthScreen = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-[#f4f7fb] dark:bg-vault-bg">
-      <form onSubmit={submit} className="clay-card bg-white dark:bg-vault-surface w-full max-w-md p-8 space-y-4">
+      <form onSubmit={submit} className="shadcn-card bg-white dark:bg-vault-surface w-full max-w-md p-8 space-y-4">
         <div className="text-center">
           <Shield className="w-12 h-12 mx-auto text-indigo-600 dark:text-cyan-400" />
           <h1 className="text-2xl font-extrabold mt-3">Welcome to SentinelRAG</h1>
@@ -46,9 +46,9 @@ const AuthScreen = () => {
         </div>
         {error && <div className="rounded-xl bg-red-50 text-red-700 p-3 text-xs">{error}</div>}
         {mode === 'register' && (
-          <input required placeholder="Full name" value={form.fullName} onChange={(e) => setForm({ ...form, fullName: e.target.value })} className="clay-input w-full" />
+          <input required placeholder="Full name" value={form.fullName} onChange={(e) => setForm({ ...form, fullName: e.target.value })} className="shadcn-input w-full" />
         )}
-        <input required type="email" placeholder="Email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="clay-input w-full" />
+        <input required type="email" placeholder="Email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="shadcn-input w-full" />
         <PasswordInput
           required
           minLength={8}
@@ -57,7 +57,7 @@ const AuthScreen = () => {
           onChange={(password) => setForm({ ...form, password })}
           autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
         />
-        <button disabled={submitting} className="neubrutalist-btn-primary w-full">{submitting ? 'Please wait...' : mode === 'login' ? 'Sign in' : 'Create account'}</button>
+        <button disabled={submitting} className="shadcn-btn-primary w-full">{submitting ? 'Please wait...' : mode === 'login' ? 'Sign in' : 'Create account'}</button>
         <button type="button" onClick={() => { setMode(mode === 'login' ? 'register' : 'login'); setError(null); }} className="w-full text-xs text-indigo-600">
           {mode === 'login' ? 'First time here? Create an account' : 'Already have an account? Sign in'}
         </button>
@@ -81,13 +81,13 @@ const RequiredPasswordChange = () => {
     finally { setSaving(false); }
   };
   return <div className="min-h-screen flex items-center justify-center p-4 bg-[#f4f7fb] dark:bg-vault-bg">
-    <form onSubmit={submit} className="clay-card bg-white dark:bg-vault-surface w-full max-w-md p-8 space-y-4">
+    <form onSubmit={submit} className="shadcn-card bg-white dark:bg-vault-surface w-full max-w-md p-8 space-y-4">
       <h1 className="text-xl font-bold">Change your initial password</h1>
       <p className="text-xs text-slate-500">Your administrator created this account. Choose a new password before continuing.</p>
       {error && <div className="rounded-xl bg-red-50 text-red-700 p-3 text-xs">{error}</div>}
-      <input required type="password" placeholder="Initial password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} className="clay-input w-full" />
-      <input required minLength={8} type="password" placeholder="New password (minimum 8 characters)" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="clay-input w-full" />
-      <button disabled={saving} className="neubrutalist-btn-primary w-full">{saving ? 'Saving...' : 'Change password'}</button>
+      <input required type="password" placeholder="Initial password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} className="shadcn-input w-full" />
+      <input required minLength={8} type="password" placeholder="New password (minimum 8 characters)" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="shadcn-input w-full" />
+      <button disabled={saving} className="shadcn-btn-primary w-full">{saving ? 'Saving...' : 'Change password'}</button>
       <button type="button" onClick={logout} className="w-full text-xs text-red-600">Sign out</button>
     </form>
   </div>;

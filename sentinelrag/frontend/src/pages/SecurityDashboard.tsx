@@ -192,7 +192,7 @@ export const SecurityDashboard = () => {
 
         <button
           onClick={fetchDashboardData}
-          className="neubrutalist-btn text-xs flex items-center gap-2 self-end sm:self-auto"
+          className="shadcn-btn text-xs flex items-center gap-2 self-end sm:self-auto"
         >
           <RotateCcw className="w-3.5 h-3.5" />
           Refresh Telemetry
@@ -200,7 +200,7 @@ export const SecurityDashboard = () => {
       </div>
 
       {currentUser?.role === 'ADMIN' && (
-        <section className="clay-card p-6 border border-slate-200/80 dark:border-vault-border">
+        <section className="shadcn-card p-6 border border-slate-200/80 dark:border-vault-border">
           <div className="flex items-center gap-2 mb-4">
             <ShieldCheck className="w-5 h-5 text-indigo-600 dark:text-cyan-400" />
             <div>
@@ -230,14 +230,14 @@ export const SecurityDashboard = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mt-6 pt-5 border-t border-slate-200 dark:border-vault-border">
             <form onSubmit={createRole} className="space-y-2">
               <h3 className="font-bold">Create custom role</h3>
-              <input required placeholder="Role name e.g. LEGAL_REVIEWER" value={newRole.name} onChange={(e) => setNewRole({ ...newRole, name: e.target.value })} className="clay-input w-full text-xs" />
-              <input placeholder="Description" value={newRole.description} onChange={(e) => setNewRole({ ...newRole, description: e.target.value })} className="clay-input w-full text-xs" />
-              <button className="neubrutalist-btn-primary text-xs">Add role</button>
+              <input required placeholder="Role name e.g. LEGAL_REVIEWER" value={newRole.name} onChange={(e) => setNewRole({ ...newRole, name: e.target.value })} className="shadcn-input w-full text-xs" />
+              <input placeholder="Description" value={newRole.description} onChange={(e) => setNewRole({ ...newRole, description: e.target.value })} className="shadcn-input w-full text-xs" />
+              <button className="shadcn-btn-primary text-xs">Add role</button>
             </form>
             <form onSubmit={createMember} className="space-y-2">
               <h3 className="font-bold">Add organization member</h3>
-              <input required placeholder="Full name" value={newMember.full_name} onChange={(e) => setNewMember({ ...newMember, full_name: e.target.value })} className="clay-input w-full text-xs" />
-              <input required type="email" placeholder="Email" value={newMember.email} onChange={(e) => setNewMember({ ...newMember, email: e.target.value })} className="clay-input w-full text-xs" />
+              <input required placeholder="Full name" value={newMember.full_name} onChange={(e) => setNewMember({ ...newMember, full_name: e.target.value })} className="shadcn-input w-full text-xs" />
+              <input required type="email" placeholder="Email" value={newMember.email} onChange={(e) => setNewMember({ ...newMember, email: e.target.value })} className="shadcn-input w-full text-xs" />
               <div className="grid grid-cols-2 gap-2">
                 <ThemedSelect
                   value={newMember.department}
@@ -252,7 +252,7 @@ export const SecurityDashboard = () => {
                   aria-label="Member role"
                 />
               </div>
-              <button className="neubrutalist-btn-primary text-xs">Add member</button>
+              <button className="shadcn-btn-primary text-xs">Add member</button>
             </form>
           </div>
         </section>
@@ -268,7 +268,7 @@ export const SecurityDashboard = () => {
         ].map((kpi, idx) => {
           const Icon = kpi.icon;
           return (
-            <div key={idx} className="clay-card p-6 flex items-center gap-4 border border-slate-200/80 dark:border-vault-border">
+            <div key={idx} className="shadcn-card p-6 flex items-center gap-4 border border-slate-200/80 dark:border-vault-border">
               <div className={`p-3.5 rounded-2xl ${kpi.bg} ${kpi.color} shrink-0`}>
                 <Icon className="w-7 h-7" />
               </div>
@@ -284,7 +284,7 @@ export const SecurityDashboard = () => {
       {/* Interactive PromptGuard Playground & Threat Chart */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* PromptGuard 2.0 Playground (2 Columns) */}
-        <div className="clay-card p-6 md:p-8 lg:col-span-2 space-y-5 border border-slate-200/80 dark:border-vault-border">
+        <div className="shadcn-card p-6 md:p-8 lg:col-span-2 space-y-5 border border-slate-200/80 dark:border-vault-border">
           <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-vault-border">
             <div className="flex items-center gap-2.5">
               <Terminal className="w-6 h-6 text-indigo-600 dark:text-cyan-400" />
@@ -334,14 +334,14 @@ export const SecurityDashboard = () => {
                 value={testPrompt}
                 onChange={(e) => setTestPrompt(e.target.value)}
                 placeholder="Type or paste any adversarial prompt string to test..."
-                className="clay-input text-xs resize-none font-mono"
+                className="shadcn-input text-xs resize-none font-mono"
               />
             </div>
 
             <button
               onClick={() => handleTestPromptGuard()}
               disabled={testingGuard}
-              className="neubrutalist-btn-primary text-xs flex items-center gap-2"
+              className="shadcn-btn-primary text-xs flex items-center gap-2"
             >
               <Play className="w-3.5 h-3.5" />
               {testingGuard ? "Running Heuristic Analysis..." : "Evaluate Prompt Safety"}
@@ -397,7 +397,7 @@ export const SecurityDashboard = () => {
         {/* Threat Distribution Chart & Policy Switchboard */}
         <div className="flex flex-col gap-6">
           {/* Threat Distribution Chart */}
-          <div className="clay-card p-6 border border-slate-200/80 dark:border-vault-border flex flex-col justify-between">
+          <div className="shadcn-card p-6 border border-slate-200/80 dark:border-vault-border flex flex-col justify-between">
             <h3 className="font-bold text-base text-slate-900 dark:text-white mb-2">
               Threat Breakdown
             </h3>
@@ -435,7 +435,7 @@ export const SecurityDashboard = () => {
           </div>
 
           {/* Zero-Trust Policy Engine Controls */}
-          <div className="clay-card p-6 border border-slate-200/80 dark:border-vault-border space-y-3 text-xs">
+          <div className="shadcn-card p-6 border border-slate-200/80 dark:border-vault-border space-y-3 text-xs">
             <h3 className="font-bold text-base text-slate-900 dark:text-white">
               Policy Controls
             </h3>
@@ -473,7 +473,7 @@ export const SecurityDashboard = () => {
       </div>
 
       {/* Live Security Log Stream */}
-      <div className="clay-card p-6 md:p-8 space-y-5 border border-slate-200/80 dark:border-vault-border">
+      <div className="shadcn-card p-6 md:p-8 space-y-5 border border-slate-200/80 dark:border-vault-border">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-3 border-b border-slate-100 dark:border-vault-border">
           <div className="flex items-center gap-2.5">
             <Activity className="w-6 h-6 text-indigo-600 dark:text-cyan-400" />
