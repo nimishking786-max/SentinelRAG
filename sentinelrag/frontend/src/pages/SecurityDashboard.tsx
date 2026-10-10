@@ -233,7 +233,7 @@ export const SecurityDashboard = () => {
                     onChange={(role) => updateUserRole(user.id, role)}
                     disabled={user.id === currentUser.id}
                     title={user.id === currentUser.id ? 'You cannot remove your own admin role' : 'Assign role'}
-                    options={['ADMIN', 'HR_MANAGER', 'FINANCE_MANAGER', 'EMPLOYEE'].map((role) => ({ value: role, label: role }))}
+                    options={roles.map((role) => ({ value: role.name, label: role.name }))}
                     aria-label={`Role for ${user.full_name}`}
                   />
                   <button
