@@ -569,8 +569,8 @@ export const DocumentManagement = () => {
 
       {/* Chunk Inspector Modal */}
       {inspectorDoc && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in">
-          <div className="shadcn-card p-6 md:p-8 max-w-2xl w-full space-y-4 border border-slate-200 dark:border-vault-border max-h-[85vh] flex flex-col">
+        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden overscroll-none bg-black/60 p-4 backdrop-blur-sm animate-in fade-in">
+          <div className="shadcn-card flex min-h-0 max-h-[85vh] w-full max-w-2xl flex-col space-y-4 overflow-hidden border border-slate-200 p-6 dark:border-vault-border md:p-8">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-vault-border">
               <div className="flex items-center gap-2">
                 <Layers className="w-5 h-5 text-indigo-600 dark:text-cyan-400" />
@@ -611,7 +611,11 @@ export const DocumentManagement = () => {
                 No chunks available for this document.
               </div>
             ) : (
-              <div className="flex-1 overflow-y-auto space-y-3 pr-1">
+              <div
+                onWheel={(event) => event.stopPropagation()}
+                onTouchMove={(event) => event.stopPropagation()}
+                className="modal-scroll-area min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain pr-1"
+              >
                 {chunks.map((c, i) => (
                   <div key={i} className="p-4 rounded-2xl bg-slate-50 dark:bg-vault-card border border-slate-200/70 dark:border-vault-border text-xs space-y-2">
                     <div className="flex items-center justify-between text-[11px] font-mono text-slate-400">
