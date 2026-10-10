@@ -37,7 +37,7 @@ interface SecurityEvent {
 }
 
 export const SecurityDashboard = () => {
-  const { currentUser } = useAuth();
+  const { currentUser, refreshAvailableUsers } = useAuth();
   const [users, setUsers] = useState<any[]>([]);
   const [roles, setRoles] = useState<any[]>([]);
   const [newRole, setNewRole] = useState({ name: '', description: '' });
@@ -108,6 +108,7 @@ export const SecurityDashboard = () => {
       await api.patch(`/admin/users/${userId}/role`, { role });
       const res = await api.get('/admin/users');
       setUsers(res.data || []);
+      await refreshAvailableUsers();
     } catch (err: any) {
       alert(err?.response?.data?.detail || 'Could not update user role');
     }
@@ -130,6 +131,7 @@ export const SecurityDashboard = () => {
     try {
       const res = await api.post('/admin/members', newMember);
       setUsers((current) => [...current, res.data.member]);
+      await refreshAvailableUsers();
       setInitialPassword(res.data.initial_password);
       setNewMember({ full_name: '', email: '', department: 'GENERAL', role: roles[0]?.name || 'EMPLOYEE' });
     } catch (err: any) { alert(err?.response?.data?.detail || 'Could not create member'); }
