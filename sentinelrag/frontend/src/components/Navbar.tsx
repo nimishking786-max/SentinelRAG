@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { ThemedSelect } from './ui/ThemedSelect';
 import { 
   MessageSquare, 
   FolderLock, 
@@ -264,9 +265,12 @@ export const Navbar = () => {
             <input required type="email" placeholder="Email" value={authForm.email} onChange={(e) => setAuthForm({ ...authForm, email: e.target.value })} className="clay-input w-full" />
             <input required minLength={8} type="password" placeholder="Password (minimum 8 characters)" value={authForm.password} onChange={(e) => setAuthForm({ ...authForm, password: e.target.value })} className="clay-input w-full" />
             {authMode === 'register' && (
-              <select value={authForm.department} onChange={(e) => setAuthForm({ ...authForm, department: e.target.value })} className="clay-input w-full">
-                <option>GENERAL</option><option>HR</option><option>FINANCE</option><option>SALES</option><option>RESEARCH</option>
-              </select>
+              <ThemedSelect
+                value={authForm.department}
+                onChange={(department) => setAuthForm({ ...authForm, department })}
+                options={['GENERAL', 'HR', 'FINANCE', 'SALES', 'RESEARCH'].map((department) => ({ value: department, label: department }))}
+                aria-label="Department"
+              />
             )}
             <button disabled={authSubmitting} className="neubrutalist-btn-primary w-full">
               {authSubmitting ? 'Please wait...' : authMode === 'login' ? 'Sign in' : 'Create account'}

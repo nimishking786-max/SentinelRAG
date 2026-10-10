@@ -24,6 +24,7 @@ import {
   Tooltip 
 } from 'recharts';
 import { useAuth } from '../context/AuthContext';
+import { ThemedSelect } from '../components/ui/ThemedSelect';
 
 interface SecurityEvent {
   id: string;
@@ -212,18 +213,14 @@ export const SecurityDashboard = () => {
                   <p className="text-sm font-bold">{user.full_name}</p>
                   <p className="text-xs text-slate-500">{user.email} · {user.department}</p>
                 </div>
-                <select
+                <ThemedSelect
                   value={user.role}
-                  onChange={(event) => updateUserRole(user.id, event.target.value)}
+                  onChange={(role) => updateUserRole(user.id, role)}
                   disabled={user.id === currentUser.id}
-                  className="clay-input text-xs"
                   title={user.id === currentUser.id ? 'You cannot remove your own admin role' : 'Assign role'}
-                >
-                  <option value="ADMIN">ADMIN</option>
-                  <option value="HR_MANAGER">HR_MANAGER</option>
-                  <option value="FINANCE_MANAGER">FINANCE_MANAGER</option>
-                  <option value="EMPLOYEE">EMPLOYEE</option>
-                </select>
+                  options={['ADMIN', 'HR_MANAGER', 'FINANCE_MANAGER', 'EMPLOYEE'].map((role) => ({ value: role, label: role }))}
+                  aria-label={`Role for ${user.full_name}`}
+                />
               </div>
             ))}
           </div>
@@ -240,8 +237,18 @@ export const SecurityDashboard = () => {
               <input required placeholder="Full name" value={newMember.full_name} onChange={(e) => setNewMember({ ...newMember, full_name: e.target.value })} className="clay-input w-full text-xs" />
               <input required type="email" placeholder="Email" value={newMember.email} onChange={(e) => setNewMember({ ...newMember, email: e.target.value })} className="clay-input w-full text-xs" />
               <div className="grid grid-cols-2 gap-2">
-                <select value={newMember.department} onChange={(e) => setNewMember({ ...newMember, department: e.target.value })} className="clay-input text-xs"><option>GENERAL</option><option>HR</option><option>FINANCE</option><option>SALES</option><option>RESEARCH</option></select>
-                <select value={newMember.role} onChange={(e) => setNewMember({ ...newMember, role: e.target.value })} className="clay-input text-xs">{roles.map((role) => <option key={role.name}>{role.name}</option>)}</select>
+                <ThemedSelect
+                  value={newMember.department}
+                  onChange={(department) => setNewMember({ ...newMember, department })}
+                  options={['GENERAL', 'HR', 'FINANCE', 'SALES', 'RESEARCH'].map((department) => ({ value: department, label: department }))}
+                  aria-label="Member department"
+                />
+                <ThemedSelect
+                  value={newMember.role}
+                  onChange={(role) => setNewMember({ ...newMember, role })}
+                  options={roles.map((role) => ({ value: role.name, label: role.name }))}
+                  aria-label="Member role"
+                />
               </div>
               <button className="neubrutalist-btn-primary text-xs">Add member</button>
             </form>
@@ -486,17 +493,18 @@ export const SecurityDashboard = () => {
               />
             </div>
 
-            <select
+            <ThemedSelect
               value={eventFilter}
-              onChange={(e) => setEventFilter(e.target.value)}
-              className="bg-slate-100 dark:bg-vault-card border border-slate-200 dark:border-vault-border text-slate-700 dark:text-slate-300 text-xs rounded-xl px-2.5 py-1.5 outline-none font-semibold"
-            >
-              <option value="ALL">All Severities</option>
-              <option value="CRITICAL">CRITICAL</option>
-              <option value="HIGH">HIGH</option>
-              <option value="MEDIUM">MEDIUM</option>
-              <option value="LOW">LOW</option>
-            </select>
+              onChange={setEventFilter}
+              options={[
+                { value: 'ALL', label: 'All Severities' },
+                { value: 'CRITICAL', label: 'CRITICAL' },
+                { value: 'HIGH', label: 'HIGH' },
+                { value: 'MEDIUM', label: 'MEDIUM' },
+                { value: 'LOW', label: 'LOW' },
+              ]}
+              aria-label="Filter by severity"
+            />
           </div>
         </div>
 

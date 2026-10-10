@@ -15,6 +15,7 @@ import {
   ShieldAlert,
   ChevronDown
 } from 'lucide-react';
+import { ThemedSelect } from '../components/ui/ThemedSelect';
 
 interface DocumentItem {
   id: string;
@@ -283,29 +284,20 @@ export const DocumentManagement = () => {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <select
-            value={deptFilter}
-            onChange={(e) => setDeptFilter(e.target.value)}
-            className="bg-white dark:bg-vault-card border border-slate-200 dark:border-vault-border text-slate-700 dark:text-slate-300 text-xs rounded-2xl px-3 py-3 outline-none shadow-sm font-semibold"
-          >
-            <option value="ALL">All Departments</option>
-            <option value="FINANCE">Finance</option>
-            <option value="HR">HR & People</option>
-            <option value="GENERAL">General</option>
-            <option value="ADMIN">Admin / M&A</option>
-          </select>
-
-          <select
-            value={sensitivityFilter}
-            onChange={(e) => setSensitivityFilter(e.target.value)}
-            className="bg-white dark:bg-vault-card border border-slate-200 dark:border-vault-border text-slate-700 dark:text-slate-300 text-xs rounded-2xl px-3 py-3 outline-none shadow-sm font-semibold"
-          >
-            <option value="ALL">All Sensitivities</option>
-            <option value="PUBLIC">PUBLIC</option>
-            <option value="INTERNAL">INTERNAL</option>
-            <option value="CONFIDENTIAL">CONFIDENTIAL</option>
-            <option value="RESTRICTED">RESTRICTED</option>
-          </select>
+          <ThemedSelect value={deptFilter} onChange={setDeptFilter} options={[
+            { value: 'ALL', label: 'All Departments' },
+            { value: 'FINANCE', label: 'Finance' },
+            { value: 'HR', label: 'HR & People' },
+            { value: 'GENERAL', label: 'General' },
+            { value: 'ADMIN', label: 'Admin / M&A' },
+          ]} aria-label="Filter by department" />
+          <ThemedSelect value={sensitivityFilter} onChange={setSensitivityFilter} options={[
+            { value: 'ALL', label: 'All Sensitivities' },
+            { value: 'PUBLIC', label: 'PUBLIC' },
+            { value: 'INTERNAL', label: 'INTERNAL' },
+            { value: 'CONFIDENTIAL', label: 'CONFIDENTIAL' },
+            { value: 'RESTRICTED', label: 'RESTRICTED' },
+          ]} aria-label="Filter by sensitivity" />
         </div>
       </div>
 
