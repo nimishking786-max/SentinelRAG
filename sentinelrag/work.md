@@ -16,6 +16,8 @@ The project currently has a React/Vite frontend with these pages:
   status, and chunk count.
 - **Security Center**: Displays security statistics, security events, audit
   logs, and a PromptGuard testing playground.
+- **Profile**: Shows the signed-in user's identity, role, department, and
+  email, and allows the user to upload a profile image.
 - **Theme switching**: Supports dark and light mode in the frontend.
 
 ## 2. Demo user authentication
@@ -153,16 +155,21 @@ the number of redacted items and the application records a security event.
 
 The Security Center currently provides:
 
-- Total query statistics.
-- Authorized query statistics.
-- Access-denied counts.
-- Prompt-injection blocked counts.
-- PII-redaction counts.
-- Vault document and vector-chunk counts.
+- Dynamic total query, authorized query, and access-denied counts based on
+  stored `CHAT_QUERY` audit records.
+- Dynamic prompt-injection and PII-redaction counts based on stored security
+  events.
+- Dynamic vault document and vector-chunk counts from the database.
+- A dynamic threat-breakdown donut based on recorded PromptGuard categories:
+  instruction overrides, security policy overrides, prompt exfiltration, and
+  context delimiters.
 - PromptGuard, PII scanner, RBAC, and vector database status indicators.
 - Security event history.
 - Audit log history.
 - A live PromptGuard test endpoint for checking an arbitrary prompt.
+
+The dashboard no longer uses fabricated minimum values or hardcoded threat
+percentages. Empty databases can therefore correctly display zero activity.
 
 ## 9. Backend API currently available
 
@@ -171,13 +178,22 @@ The FastAPI backend currently exposes:
 - `GET /api/health`
 - `GET /api/auth/demo-users`
 - `POST /api/auth/login`
+- `POST /api/auth/register`
 - `GET /api/auth/me`
+- `POST /api/auth/change-password`
+- `POST /api/auth/profile/avatar`
+- `GET /api/auth/roles`
 - `POST /api/documents/upload`
 - `GET /api/documents/`
 - `GET /api/documents/all`
 - `GET /api/documents/{doc_id}/chunks`
 - `DELETE /api/documents/{doc_id}`
 - `POST /api/chat/`
+- `GET /api/admin/roles`
+- `POST /api/admin/roles`
+- `POST /api/admin/members`
+- `GET /api/admin/users`
+- `PATCH /api/admin/users/{user_id}/role`
 - `GET /api/admin/stats`
 - `GET /api/admin/events`
 - `GET /api/admin/audit-logs`
@@ -210,7 +226,28 @@ Default development URLs:
 - Backend: `http://127.0.0.1:8000`
 - Backend API docs: `http://127.0.0.1:8000/docs`
 
-## 11. Configuration-dependent behavior
+## 11. Profile and avatar persistence
+
+- Profile data is loaded from the authenticated user's `profiles` record.
+- Avatar uploads are limited server-side to JPG, PNG, WEBP, or GIF files up to
+  2 MB.
+- The validated avatar is persisted in the Supabase `profiles.avatar_url`
+  column and returned to the frontend.
+- The navbar and profile page update immediately after a successful upload.
+- The current implementation stores the image as a data URL in the profile
+  record; it does not currently upload profile images to Supabase Storage.
+
+## 12. Vercel deployment
+
+- The frontend includes `frontend/vercel.json` with Vite build settings and a
+  single-page-app fallback for React Router routes.
+- Set the Vercel project root to `sentinelrag/frontend`.
+- Use `npm run build` as the build command and `dist` as the output directory.
+- Set `VITE_API_URL` in Vercel to the deployed FastAPI base URL ending in
+  `/api`.
+- Local development leaves `VITE_API_URL` empty and uses Vite's `/api` proxy.
+
+## 13. Configuration-dependent behavior
 
 The complete database and AI workflow depends on the backend `.env` values,
 including:

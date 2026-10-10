@@ -6,7 +6,6 @@ from app.database.supabase import supabase_client
 from app.security.prompt_guard import PromptGuard, PIIDetector
 from app.auth.auth import get_current_user, TokenData, get_password_hash
 from app.security.permissions import RBAC
-import random
 
 router = APIRouter()
 
@@ -104,17 +103,46 @@ async def get_security_stats():
     events = supabase_client.table("security_events").select("*").execute().data or []
     audits = supabase_client.table("audit_logs").select("*").execute().data or []
 
-    blocked_injections = len([e for e in events if "INJECTION" in str(e.get("event_type", ""))])
-    access_denied = len([e for e in events if "DENIED" in str(e.get("event_type", "")) or str(e.get("status")) == "DENIED"])
-    pii_redacted = len([e for e in events if "PII" in str(e.get("event_type", ""))])
-    authorized_queries = len([a for a in audits if str(a.get("status")) == "SUCCESS"])
+    chat_audits = [
+        audit for audit in audits
+        if audit.get("action") == "CHAT_QUERY"
+    ]
+    blocked_injection_events = [
+        event for event in events
+        if event.get("event_type") == "PROMPT_INJECTION_ATTEMPT"
+    ]
+    access_denied = len([
+        audit for audit in chat_audits
+        if audit.get("status") == "DENIED"
+    ])
+    pii_redacted = len([
+        event for event in events
+        if event.get("event_type") == "PII_REDACTION_APPLIED"
+    ])
+
+    threat_categories = [
+        ("Instruction Overrides", "INSTRUCTION_OVERRIDE", "#ef4444"),
+        ("Security Policy Overrides", "SECURITY_POLICY_OVERRIDE", "#f59e0b"),
+        ("Prompt Exfiltration", "PROMPT_EXFILTRATION", "#3b82f6"),
+        ("Context Delimiters", "DELIMITER_INJECTION", "#8b5cf6"),
+    ]
+    threat_distribution = []
+    for name, category, color in threat_categories:
+        count = sum(
+            1 for event in blocked_injection_events
+            if (event.get("metadata") or {}).get("category") == category
+        )
+        threat_distribution.append({"name": name, "value": count, "color": color})
 
     return {
-        "total_queries": max(1248, len(audits) * 12 + 1200),
-        "authorized_queries": max(1180, authorized_queries * 10 + 1150),
-        "access_denied": max(56, access_denied * 5 + 50),
-        "injections_blocked": max(12, blocked_injections + 12),
-        "pii_redactions": max(18, pii_redacted + 15),
+        "total_queries": len(chat_audits),
+        "authorized_queries": len([
+            audit for audit in chat_audits
+            if audit.get("status") == "SUCCESS"
+        ]),
+        "access_denied": access_denied,
+        "injections_blocked": len(blocked_injection_events),
+        "pii_redactions": pii_redacted,
         "vault_documents": len(docs),
         "vector_chunks": len(chunks),
         "system_status": {
@@ -123,12 +151,7 @@ async def get_security_stats():
             "rbac_policy_engine": "ACTIVE",
             "vector_db_latency": "14ms"
         },
-        "threat_distribution": [
-            {"name": "Instruction Overrides", "value": 38, "color": "#ef4444"},
-            {"name": "Role Escalation", "value": 29, "color": "#f59e0b"},
-            {"name": "PII Exfiltration", "value": 21, "color": "#3b82f6"},
-            {"name": "Context Delimiters", "value": 12, "color": "#8b5cf6"}
-        ]
+        "threat_distribution": threat_distribution
     }
 
 @router.get("/events")

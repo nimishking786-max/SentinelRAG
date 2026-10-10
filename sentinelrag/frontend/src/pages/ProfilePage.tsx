@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Camera, Check, Mail, Shield, User } from 'lucide-react';
+import { Building2, Camera, Check, Mail, Shield, User } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export const ProfilePage = () => {
@@ -71,23 +71,32 @@ export const ProfilePage = () => {
 
           <div className="profile-details">
             <div className="profile-detail">
-              <span className="profile-detail__label">Full name</span>
-              <span className="profile-detail__value">{currentUser.full_name}</span>
+              <User className="profile-detail__icon" />
+              <div className="profile-detail__content">
+                <span className="profile-detail__label">Full name</span>
+                <span className="profile-detail__value">{currentUser.full_name}</span>
+              </div>
             </div>
             <div className="profile-detail">
-              <Mail className="h-4 w-4 text-[#FF6A1A]" />
-              <div>
+              <Mail className="profile-detail__icon" />
+              <div className="profile-detail__content">
                 <span className="profile-detail__label">Email</span>
                 <span className="profile-detail__value">{currentUser.email}</span>
               </div>
             </div>
             <div className="profile-detail">
-              <span className="profile-detail__label">Role</span>
-              <span className="profile-detail__value">{currentUser.role}</span>
+              <Shield className="profile-detail__icon" />
+              <div className="profile-detail__content">
+                <span className="profile-detail__label">Role</span>
+                <span className="profile-detail__value">{currentUser.role}</span>
+              </div>
             </div>
             <div className="profile-detail">
-              <span className="profile-detail__label">Department</span>
-              <span className="profile-detail__value">{currentUser.department}</span>
+              <Building2 className="profile-detail__icon" />
+              <div className="profile-detail__content">
+                <span className="profile-detail__label">Department</span>
+                <span className="profile-detail__value">{currentUser.department}</span>
+              </div>
             </div>
           </div>
         </div>

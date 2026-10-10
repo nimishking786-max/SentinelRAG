@@ -78,6 +78,53 @@
     @apply w-full rounded-2xl border border-white/70 bg-white/45 px-4 py-3 text-slate-800 shadow-[inset_0_2px_10px_rgba(111,88,145,0.08)] outline-none backdrop-blur-xl transition-all placeholder:text-slate-400 focus:border-violet-400/70 focus:ring-4 focus:ring-violet-300/20;
   }
 
+  .technical-select {
+    appearance: auto;
+    background-color: #f8fafc;
+    border: 1px solid #cbd0d8;
+    border-radius: 10px;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    color: #172033;
+    color-scheme: light;
+    font-weight: 600;
+  }
+
+  .technical-select:focus {
+    border-color: #d99025;
+    box-shadow: 0 0 0 3px rgba(217, 144, 37, 0.18);
+    outline: none;
+  }
+
+  .technical-select option {
+    background: #f8fafc;
+    color: #172033;
+    font-weight: 600;
+  }
+
+  .technical-select-menu {
+    border: 1px solid #62636d;
+    border-radius: 10px;
+    background: #202127;
+    box-shadow: 4px 4px 0 rgba(98, 99, 109, 0.38);
+  }
+
+  .technical-select-option {
+    display: block;
+    width: 100%;
+    border-radius: 7px;
+    padding: 0.7rem 0.75rem;
+    color: #f7f5f2;
+    text-align: left;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  .technical-select-option:hover,
+  .technical-select-option.is-selected {
+    background: #30271b;
+    color: #ffc766;
+  }
+
   .badge-tag {
     @apply inline-flex items-center gap-1.5 rounded-full border border-white/70 bg-white/50 px-3 py-1 text-xs font-bold uppercase tracking-wider text-slate-700 shadow-sm backdrop-blur-xl transition-all;
   }
@@ -315,6 +362,22 @@
     font-size: 0.85rem;
   }
 
+  html:not(.dark) .profile-panel {
+    border-color: #cbd0d8;
+    background: #fffdfa;
+    box-shadow: 4px 4px 0 rgba(148, 163, 184, 0.32);
+    color: #172033;
+  }
+
+  html:not(.dark) .profile-panel__header {
+    border-color: #e1e5eb;
+  }
+
+  html:not(.dark) .profile-panel__copy,
+  html:not(.dark) .profile-avatar__hint {
+    color: #596273;
+  }
+
   .profile-panel__body {
     display: grid;
     gap: 2rem;
@@ -375,12 +438,23 @@
   }
 
   .profile-detail {
-    display: flex;
+    display: grid;
+    grid-template-columns: 1.25rem minmax(0, 1fr);
     align-items: center;
     gap: 0.75rem;
     border: 1px solid #393a42;
     border-radius: 8px;
     padding: 0.9rem 1rem;
+  }
+
+  .profile-detail__icon {
+    width: 1rem;
+    height: 1rem;
+    color: #ff6a1a;
+  }
+
+  .profile-detail__content {
+    min-width: 0;
   }
 
   .profile-detail__value {
@@ -389,6 +463,17 @@
     color: #f7f5f2;
     font-size: 0.95rem;
     font-weight: 700;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+  }
+
+  html:not(.dark) .profile-detail {
+    border-color: #d9dde4;
+    background: #f8fafc;
+  }
+
+  html:not(.dark) .profile-detail__value {
+    color: #172033;
   }
 
   .profile-feedback {
@@ -555,6 +640,34 @@ html:not(.dark) .technical-feature-card__description {
   background: rgba(255,255,255,.1) !important;
   border-color: rgba(255,255,255,.2) !important;
   color: #f8fafc;
+}
+
+.dark .technical-select {
+  background-color: #202127 !important;
+  border-color: #62636d !important;
+  color: #f7f5f2 !important;
+  color-scheme: dark;
+}
+
+.dark .technical-select option {
+  background: #202127;
+  color: #f7f5f2;
+}
+
+html:not(.dark) .technical-select-menu {
+  border-color: #cbd0d8;
+  background: #fffdfa;
+  box-shadow: 4px 4px 0 rgba(148, 163, 184, 0.32);
+}
+
+html:not(.dark) .technical-select-option {
+  color: #172033;
+}
+
+html:not(.dark) .technical-select-option:hover,
+html:not(.dark) .technical-select-option.is-selected {
+  background: #fff3dc;
+  color: #9a5d0b;
 }
 
 .dark .neubrutalist-btn {
