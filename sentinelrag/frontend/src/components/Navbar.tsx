@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { PasswordInput } from './ui/PasswordInput';
 import { 
   MessageSquare, 
   FolderLock, 
@@ -264,7 +265,14 @@ export const Navbar = () => {
               <input required placeholder="Full name" value={authForm.fullName} onChange={(e) => setAuthForm({ ...authForm, fullName: e.target.value })} className="clay-input w-full" />
             )}
             <input required type="email" placeholder="Email" value={authForm.email} onChange={(e) => setAuthForm({ ...authForm, email: e.target.value })} className="clay-input w-full" />
-            <input required minLength={8} type="password" placeholder="Password (minimum 8 characters)" value={authForm.password} onChange={(e) => setAuthForm({ ...authForm, password: e.target.value })} className="clay-input w-full" />
+            <PasswordInput
+              required
+              minLength={8}
+              placeholder="Password (minimum 8 characters)"
+              value={authForm.password}
+              onChange={(password) => setAuthForm({ ...authForm, password })}
+              autoComplete={authMode === 'login' ? 'current-password' : 'new-password'}
+            />
             <button disabled={authSubmitting} className="neubrutalist-btn-primary w-full">
               {authSubmitting ? 'Please wait...' : authMode === 'login' ? 'Sign in' : 'Create account'}
             </button>

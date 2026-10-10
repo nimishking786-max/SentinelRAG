@@ -12,6 +12,7 @@ import { useAuth } from './context/AuthContext';
 import { BackgroundBeams } from './components/aceternity/BackgroundBeams';
 import { SmoothScroll } from './components/SmoothScroll';
 import { ProfilePage } from './pages/ProfilePage';
+import { PasswordInput } from './components/ui/PasswordInput';
 
 const AuthScreen = () => {
   const { login, register } = useAuth();
@@ -48,7 +49,14 @@ const AuthScreen = () => {
           <input required placeholder="Full name" value={form.fullName} onChange={(e) => setForm({ ...form, fullName: e.target.value })} className="clay-input w-full" />
         )}
         <input required type="email" placeholder="Email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="clay-input w-full" />
-        <input required minLength={8} type="password" placeholder="Password (minimum 8 characters)" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} className="clay-input w-full" />
+        <PasswordInput
+          required
+          minLength={8}
+          placeholder="Password (minimum 8 characters)"
+          value={form.password}
+          onChange={(password) => setForm({ ...form, password })}
+          autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+        />
         <button disabled={submitting} className="neubrutalist-btn-primary w-full">{submitting ? 'Please wait...' : mode === 'login' ? 'Sign in' : 'Create account'}</button>
         <button type="button" onClick={() => { setMode(mode === 'login' ? 'register' : 'login'); setError(null); }} className="w-full text-xs text-indigo-600">
           {mode === 'login' ? 'First time here? Create an account' : 'Already have an account? Sign in'}
