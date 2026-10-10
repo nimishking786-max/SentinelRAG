@@ -12,7 +12,8 @@ import {
   CheckCircle2, 
   X, 
   Plus, 
-  ShieldAlert 
+  ShieldAlert,
+  ChevronDown
 } from 'lucide-react';
 
 interface DocumentItem {
@@ -28,6 +29,58 @@ interface DocumentItem {
   chunk_count?: number;
   created_at?: string;
 }
+
+interface UploadSelectProps {
+  label: string;
+  value: string;
+  options: Array<{ value: string; label: string }>;
+  onChange: (value: string) => void;
+  open: boolean;
+  onToggle: () => void;
+  onClose: () => void;
+}
+
+const UploadSelect = ({ label, value, options, onChange, open, onToggle, onClose }: UploadSelectProps) => {
+  const selectedOption = options.find((option) => option.value === value) || options[0];
+
+  return (
+    <div className="relative">
+      <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">{label}</label>
+      <button
+        type="button"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        className="technical-select flex w-full items-center justify-between gap-2 px-4 py-3 text-left text-xs"
+        onClick={onToggle}
+      >
+        <span className="truncate">{selectedOption.label}</span>
+        <ChevronDown className={`h-4 w-4 shrink-0 transition-transform ${open ? 'rotate-180' : ''}`} />
+      </button>
+      {open && (
+        <>
+          <button type="button" aria-label="Close dropdown" className="fixed inset-0 z-20 cursor-default" onClick={onClose} />
+          <div className="technical-select-menu absolute left-0 right-0 top-full z-30 mt-2 overflow-hidden p-1" role="listbox" aria-label={label}>
+            {options.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                role="option"
+                aria-selected={option.value === value}
+                className={`technical-select-option ${option.value === value ? 'is-selected' : ''}`}
+                onClick={() => {
+                  onChange(option.value);
+                  onClose();
+                }}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
 
 export const DocumentManagement = () => {
   const { currentUser } = useAuth();
@@ -54,6 +107,7 @@ export const DocumentManagement = () => {
   const [uploadTextContent, setUploadTextContent] = useState('');
   const [uploading, setUploading] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
+  const [openUploadSelect, setOpenUploadSelect] = useState<'department' | 'sensitivity' | null>(null);
 
   const getApiErrorMessage = (error: any, fallback: string) => {
     const detail = error?.response?.data?.detail;
@@ -79,6 +133,17 @@ export const DocumentManagement = () => {
   useEffect(() => {
     api.get('/auth/roles').then((res) => setAvailableRoles((res.data || []).map((role: any) => role.name))).catch(() => setAvailableRoles(['ADMIN', 'HR_MANAGER', 'FINANCE_MANAGER', 'EMPLOYEE']));
   }, []);
+
+  useEffect(() => {
+    const modalOpen = uploadModalOpen || Boolean(inspectorDoc);
+    if (!modalOpen) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [uploadModalOpen, inspectorDoc]);
 
   useEffect(() => {
     fetchDocuments();
@@ -350,9 +415,10 @@ export const DocumentManagement = () => {
 
       {/* Ingest Document Modal */}
       {uploadModalOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in">
-          <div className="clay-card p-6 md:p-8 max-w-lg w-full space-y-5 border border-slate-200 dark:border-vault-border max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-vault-border">
+        <div className="fixed inset-0 overflow-y-auto overscroll-contain bg-black/60 backdrop-blur-sm p-4 z-50 animate-in fade-in">
+          <div className="flex min-h-full items-center justify-center">
+          <div className="clay-card flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden border border-slate-200 dark:border-vault-border">
+            <div className="flex items-center justify-between border-b border-slate-100 px-6 pb-3 pt-6 dark:border-vault-border md:px-8 md:pt-8">
               <div className="flex items-center gap-2 font-bold text-lg text-slate-900 dark:text-white">
                 <Upload className="w-5 h-5 text-indigo-600 dark:text-cyan-400" />
                 Ingest New Knowledge Document
@@ -366,13 +432,13 @@ export const DocumentManagement = () => {
             </div>
 
             {uploadSuccess && (
-              <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-300 text-emerald-800 dark:text-emerald-300 text-xs font-semibold flex items-center gap-2">
+              <div className="mx-6 mt-5 p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-300 text-emerald-800 dark:text-emerald-300 text-xs font-semibold flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-500" />
                 {uploadSuccess}
               </div>
             )}
 
-            <form onSubmit={handleUploadSubmit} className="space-y-4 text-xs">
+            <form onSubmit={handleUploadSubmit} className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain px-6 pb-6 pt-5 text-xs md:px-8 md:pb-8">
               <div>
                 <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
                   Document Title *
@@ -383,42 +449,44 @@ export const DocumentManagement = () => {
                   value={uploadTitle}
                   onChange={(e) => setUploadTitle(e.target.value)}
                   placeholder="e.g., FY2026_Engineering_Roadmap.pdf"
-                  className="clay-input text-xs"
+                  className="clay-input technical-select text-xs"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
-                    Department
-                  </label>
-                  <select
+                  <UploadSelect
+                    label="Department"
                     value={uploadDept}
-                    onChange={(e) => setUploadDept(e.target.value)}
-                    className="clay-input text-xs"
-                  >
-                    <option value="GENERAL">GENERAL</option>
-                    <option value="FINANCE">FINANCE</option>
-                    <option value="HR">HR</option>
-                    <option value="ADMIN">ADMIN</option>
-                    <option value="SALES">SALES</option>
-                  </select>
+                    options={[
+                      { value: 'GENERAL', label: 'GENERAL' },
+                      { value: 'FINANCE', label: 'FINANCE' },
+                      { value: 'HR', label: 'HR' },
+                      { value: 'ADMIN', label: 'ADMIN' },
+                      { value: 'SALES', label: 'SALES' },
+                    ]}
+                    open={openUploadSelect === 'department'}
+                    onToggle={() => setOpenUploadSelect((current) => current === 'department' ? null : 'department')}
+                    onClose={() => setOpenUploadSelect(null)}
+                    onChange={setUploadDept}
+                  />
                 </div>
 
                 <div>
-                  <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
-                    Sensitivity Level
-                  </label>
-                  <select
+                  <UploadSelect
+                    label="Sensitivity Level"
                     value={uploadSensitivity}
-                    onChange={(e) => setUploadSensitivity(e.target.value as any)}
-                    className="clay-input text-xs"
-                  >
-                    <option value="PUBLIC">PUBLIC (All Employees)</option>
-                    <option value="INTERNAL">INTERNAL (Dept Only)</option>
-                    <option value="CONFIDENTIAL">CONFIDENTIAL (Managers)</option>
-                    <option value="RESTRICTED">RESTRICTED (Admin/Exec)</option>
-                  </select>
+                    options={[
+                      { value: 'PUBLIC', label: 'PUBLIC (All Employees)' },
+                      { value: 'INTERNAL', label: 'INTERNAL (Dept Only)' },
+                      { value: 'CONFIDENTIAL', label: 'CONFIDENTIAL (Managers)' },
+                      { value: 'RESTRICTED', label: 'RESTRICTED (Admin/Exec)' },
+                    ]}
+                    open={openUploadSelect === 'sensitivity'}
+                    onToggle={() => setOpenUploadSelect((current) => current === 'sensitivity' ? null : 'sensitivity')}
+                    onClose={() => setOpenUploadSelect(null)}
+                    onChange={(value) => setUploadSensitivity(value as typeof uploadSensitivity)}
+                  />
                 </div>
               </div>
 
@@ -496,6 +564,7 @@ export const DocumentManagement = () => {
                 </button>
               </div>
             </form>
+          </div>
           </div>
         </div>
       )}

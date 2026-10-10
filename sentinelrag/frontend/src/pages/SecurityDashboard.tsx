@@ -43,18 +43,18 @@ export const SecurityDashboard = () => {
   const [newMember, setNewMember] = useState({ full_name: '', email: '', department: 'GENERAL', role: 'EMPLOYEE' });
   const [initialPassword, setInitialPassword] = useState<string | null>(null);
   const [stats, setStats] = useState<any>({
-    total_queries: 1248,
-    authorized_queries: 1180,
-    access_denied: 56,
-    injections_blocked: 12,
-    pii_redactions: 18,
-    vault_documents: 5,
-    vector_chunks: 9,
+    total_queries: 0,
+    authorized_queries: 0,
+    access_denied: 0,
+    injections_blocked: 0,
+    pii_redactions: 0,
+    vault_documents: 0,
+    vector_chunks: 0,
     threat_distribution: [
-      { name: "Instruction Overrides", value: 38, color: "#ef4444" },
-      { name: "Role Escalation", value: 29, color: "#f59e0b" },
-      { name: "PII Exfiltration", value: 21, color: "#3b82f6" },
-      { name: "Context Delimiters", value: 12, color: "#8b5cf6" }
+      { name: "Instruction Overrides", value: 0, color: "#ef4444" },
+      { name: "Security Policy Overrides", value: 0, color: "#f59e0b" },
+      { name: "Prompt Exfiltration", value: 0, color: "#3b82f6" },
+      { name: "Context Delimiters", value: 0, color: "#8b5cf6" }
     ]
   });
 
