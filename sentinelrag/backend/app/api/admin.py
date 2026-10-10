@@ -95,6 +95,30 @@ async def update_user_role(
         raise HTTPException(status_code=404, detail="User not found")
     return updated[0]
 
+@router.delete("/users/{user_id}")
+async def delete_user(
+    user_id: str,
+    current_user: TokenData = Depends(RBAC.require_role(["ADMIN"])),
+):
+    if user_id == current_user.user_id:
+        raise HTTPException(status_code=400, detail="You cannot delete your own administrator account")
+
+    user = supabase_client.table("profiles").select("id").eq("id", user_id).execute().data or []
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # Preserve uploaded documents and audit history while removing user-owned references.
+    supabase_client.table("documents").update({"uploaded_by": None}).eq("uploaded_by", user_id).execute()
+    supabase_client.table("document_permissions").delete().eq("user_id", user_id).execute()
+    supabase_client.table("audit_logs").update({"user_id": None}).eq("user_id", user_id).execute()
+    supabase_client.table("security_events").update({"user_id": None}).eq("user_id", user_id).execute()
+    supabase_client.table("conversations").delete().eq("user_id", user_id).execute()
+
+    deleted = supabase_client.table("profiles").delete().eq("id", user_id).execute().data or []
+    if not deleted:
+        raise HTTPException(status_code=500, detail="User could not be deleted")
+    return {"status": "success", "user_id": user_id}
+
 @router.get("/stats")
 async def get_security_stats():
     """Live telemetry stats for the Security Operations Dashboard."""

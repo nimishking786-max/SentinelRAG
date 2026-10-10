@@ -212,7 +212,7 @@ export const LandingPage = () => {
       </section>
 
       {/* Live Scenario Comparison Table */}
-      <section data-rbac className="role-access-panel clay-card scroll-performance-surface mx-auto mb-16 mt-2 max-w-[1618px] space-y-10 p-6 sm:mx-8 sm:p-8 lg:mx-auto lg:space-y-12 lg:p-12">
+      <section data-rbac className="role-access-panel shadcn-card scroll-performance-surface mx-auto mb-16 mt-2 max-w-[1618px] space-y-10 p-6 sm:mx-8 sm:p-8 lg:mx-auto lg:space-y-12 lg:p-12">
         <div className="grid items-end gap-8 lg:grid-cols-[38.2%_1fr]">
           <div className="max-w-[38rem]">
             <span className="text-[0.68rem] font-bold uppercase tracking-[0.24em] text-amber-600 dark:text-amber-300">Policy in practice</span>
@@ -225,7 +225,7 @@ export const LandingPage = () => {
           </div>
           <Link
             to="/chat"
-            className="neubrutalist-btn-primary flex w-fit items-center gap-2 text-xs"
+            className="shadcn-btn-primary flex w-fit items-center gap-2 text-xs"
           >
             Launch Live Chat Demo
             <ArrowRight className="w-3.5 h-3.5" />

@@ -15,11 +15,12 @@ export interface UserProfile {
 interface AuthContextType {
   currentUser: UserProfile | null;
   availableUsers: UserProfile[];
+  refreshAvailableUsers: () => Promise<void>;
   darkMode: boolean;
   toggleDarkMode: () => void;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (fullName: string, email: string, password: string, department: string) => Promise<void>;
+  register: (fullName: string, email: string, password: string, department?: string) => Promise<void>;
   logout: () => void;
   changePassword: (currentPassword: string, newPassword: string) => Promise<void>;
   updateAvatar: (file: File) => Promise<void>;
@@ -67,6 +68,7 @@ const defaultProfiles: UserProfile[] = [
 const AuthContext = createContext<AuthContextType>({
   currentUser: null,
   availableUsers: [],
+  refreshAvailableUsers: async () => {},
   darkMode: false,
   toggleDarkMode: () => {},
   loading: true
@@ -94,14 +96,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const toggleDarkMode = () => setDarkMode(prev => !prev);
 
+  const refreshAvailableUsers = async () => {
+    const response = await api.get('/auth/demo-users');
+    if (response.data && response.data.length > 0) {
+      setAvailableUsers(response.data);
+    }
+  };
+
   // Load demo users from backend API
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const res = await api.get('/auth/demo-users');
-        if (res.data && res.data.length > 0) {
-          setAvailableUsers(res.data);
-        }
+        await refreshAvailableUsers();
 
         const token = localStorage.getItem('token');
         if (token) {
@@ -130,7 +136,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.setItem('sentinel_user_id', user.id);
   };
 
-  const register = async (fullName: string, email: string, password: string, department: string) => {
+  const register = async (fullName: string, email: string, password: string, department = 'GENERAL') => {
     const res = await api.post('/auth/register', {
       full_name: fullName,
       email,
@@ -168,7 +174,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ currentUser, availableUsers, darkMode, toggleDarkMode, loading, login, register, logout, changePassword, updateAvatar }}>
+    <AuthContext.Provider value={{ currentUser, availableUsers, refreshAvailableUsers, darkMode, toggleDarkMode, loading, login, register, logout, changePassword, updateAvatar }}>
       {children}
     </AuthContext.Provider>
   );

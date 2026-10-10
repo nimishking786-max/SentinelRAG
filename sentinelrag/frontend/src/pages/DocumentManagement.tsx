@@ -15,6 +15,7 @@ import {
   ShieldAlert,
   ChevronDown
 } from 'lucide-react';
+import { ThemedSelect } from '../components/ui/ThemedSelect';
 
 interface DocumentItem {
   id: string;
@@ -26,6 +27,7 @@ interface DocumentItem {
   sensitivity: 'PUBLIC' | 'INTERNAL' | 'CONFIDENTIAL' | 'RESTRICTED';
   allowed_roles?: string;
   is_accessible?: boolean;
+  can_delete?: boolean;
   chunk_count?: number;
   created_at?: string;
 }
@@ -212,7 +214,7 @@ export const DocumentManagement = () => {
       await api.delete(`/documents/${docId}`);
       fetchDocuments();
     } catch (err: any) {
-      alert(getApiErrorMessage(err, "Only ADMIN role can purge vault documents."));
+      alert(getApiErrorMessage(err, "Only the uploader or an administrator can delete this document."));
     }
   };
 
@@ -248,7 +250,7 @@ export const DocumentManagement = () => {
         <div className="flex items-center gap-3 w-full sm:w-auto">
           <button
             onClick={() => setUploadModalOpen(true)}
-            className="neubrutalist-btn-primary flex items-center justify-center gap-2 text-sm w-full sm:w-auto"
+            className="shadcn-btn-primary flex items-center justify-center gap-2 text-sm w-full sm:w-auto"
           >
             <Plus className="w-4 h-4" />
             Ingest Document
@@ -283,29 +285,20 @@ export const DocumentManagement = () => {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <select
-            value={deptFilter}
-            onChange={(e) => setDeptFilter(e.target.value)}
-            className="bg-white dark:bg-vault-card border border-slate-200 dark:border-vault-border text-slate-700 dark:text-slate-300 text-xs rounded-2xl px-3 py-3 outline-none shadow-sm font-semibold"
-          >
-            <option value="ALL">All Departments</option>
-            <option value="FINANCE">Finance</option>
-            <option value="HR">HR & People</option>
-            <option value="GENERAL">General</option>
-            <option value="ADMIN">Admin / M&A</option>
-          </select>
-
-          <select
-            value={sensitivityFilter}
-            onChange={(e) => setSensitivityFilter(e.target.value)}
-            className="bg-white dark:bg-vault-card border border-slate-200 dark:border-vault-border text-slate-700 dark:text-slate-300 text-xs rounded-2xl px-3 py-3 outline-none shadow-sm font-semibold"
-          >
-            <option value="ALL">All Sensitivities</option>
-            <option value="PUBLIC">PUBLIC</option>
-            <option value="INTERNAL">INTERNAL</option>
-            <option value="CONFIDENTIAL">CONFIDENTIAL</option>
-            <option value="RESTRICTED">RESTRICTED</option>
-          </select>
+          <ThemedSelect value={deptFilter} onChange={setDeptFilter} options={[
+            { value: 'ALL', label: 'All Departments' },
+            { value: 'FINANCE', label: 'Finance' },
+            { value: 'HR', label: 'HR & People' },
+            { value: 'GENERAL', label: 'General' },
+            { value: 'ADMIN', label: 'Admin / M&A' },
+          ]} aria-label="Filter by department" />
+          <ThemedSelect value={sensitivityFilter} onChange={setSensitivityFilter} options={[
+            { value: 'ALL', label: 'All Sensitivities' },
+            { value: 'PUBLIC', label: 'PUBLIC' },
+            { value: 'INTERNAL', label: 'INTERNAL' },
+            { value: 'CONFIDENTIAL', label: 'CONFIDENTIAL' },
+            { value: 'RESTRICTED', label: 'RESTRICTED' },
+          ]} aria-label="Filter by sensitivity" />
         </div>
       </div>
 
@@ -315,7 +308,7 @@ export const DocumentManagement = () => {
           Loading documents from vault...
         </div>
       ) : filteredDocs.length === 0 ? (
-        <div className="clay-card p-12 text-center text-slate-400 space-y-3">
+        <div className="shadcn-card p-12 text-center text-slate-400 space-y-3">
           <FileText className="w-12 h-12 mx-auto text-slate-300 dark:text-slate-600" />
           <p className="font-semibold text-base">No documents match the active filter criteria.</p>
         </div>
@@ -327,26 +320,16 @@ export const DocumentManagement = () => {
             return (
               <div 
                 key={doc.id}
-                className={`clay-card p-6 flex flex-col justify-between gap-5 relative group border transition-all ${
+                className={`shadcn-card p-6 flex flex-col justify-between gap-5 relative group border transition-all ${
                   isAccessible 
                     ? 'border-slate-200/80 dark:border-vault-border hover:border-indigo-400 dark:hover:border-cyan-500' 
                     : 'border-red-200/60 dark:border-red-950/40 bg-slate-50/50 dark:bg-vault-card/40 opacity-90'
                 }`}
               >
-                {/* Delete button (Admin only) */}
-                {currentUser?.role === 'ADMIN' && (
-                  <button
-                    onClick={() => handleDelete(doc.id)}
-                    className="absolute top-4 right-4 p-2 text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
-                    title="Purge Document"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                )}
-
+                {/* Uploaders and administrators can remove documents. */}
                 <div className="space-y-4">
-                  {/* Clearance Indicator Badge */}
-                  <div className="flex items-center justify-between">
+                    {/* Clearance Indicator Badge */}
+                    <div className="flex items-center justify-between">
                     <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider inline-flex items-center gap-1.5 border ${
                       isAccessible
                         ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/70 dark:text-emerald-400 border-emerald-300 dark:border-emerald-800'
@@ -356,9 +339,21 @@ export const DocumentManagement = () => {
                       {isAccessible ? 'Clearance Granted' : 'Access Restricted'}
                     </span>
 
-                    <span className="text-[11px] font-mono text-slate-400">
-                      {doc.chunk_count || 2} Chunks
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[11px] font-mono text-slate-400">
+                        {doc.chunk_count || 2} Chunks
+                      </span>
+                      {doc.can_delete && (
+                        <button
+                          onClick={() => handleDelete(doc.id)}
+                          className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-rose-300 text-rose-500 transition-colors hover:bg-rose-50 hover:text-rose-600 dark:border-rose-900 dark:text-rose-400 dark:hover:bg-rose-950/40 dark:hover:text-rose-300"
+                          title="Delete Document"
+                          aria-label={`Delete ${doc.title}`}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+                    </div>
                   </div>
 
                   {/* Document Title & File Info */}
@@ -415,9 +410,9 @@ export const DocumentManagement = () => {
 
       {/* Ingest Document Modal */}
       {uploadModalOpen && (
-        <div className="fixed inset-0 overflow-y-auto overscroll-contain bg-black/60 backdrop-blur-sm p-4 z-50 animate-in fade-in">
-          <div className="flex min-h-full items-center justify-center">
-          <div className="clay-card flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden border border-slate-200 dark:border-vault-border">
+        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden overscroll-none bg-black/60 p-4 backdrop-blur-sm animate-in fade-in">
+          <div className="flex max-h-full w-full items-center justify-center">
+          <div className="shadcn-card flex max-h-[calc(100vh-2rem)] w-full max-w-lg flex-col overflow-hidden border border-slate-200 dark:border-vault-border">
             <div className="flex items-center justify-between border-b border-slate-100 px-6 pb-3 pt-6 dark:border-vault-border md:px-8 md:pt-8">
               <div className="flex items-center gap-2 font-bold text-lg text-slate-900 dark:text-white">
                 <Upload className="w-5 h-5 text-indigo-600 dark:text-cyan-400" />
@@ -438,7 +433,12 @@ export const DocumentManagement = () => {
               </div>
             )}
 
-            <form onSubmit={handleUploadSubmit} className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain px-6 pb-6 pt-5 text-xs md:px-8 md:pb-8">
+            <form
+              onSubmit={handleUploadSubmit}
+              onWheel={(event) => event.stopPropagation()}
+              onTouchMove={(event) => event.stopPropagation()}
+              className="modal-scroll-area min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain px-6 pb-6 pt-5 text-xs md:px-8 md:pb-8"
+            >
               <div>
                 <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
                   Document Title *
@@ -449,7 +449,7 @@ export const DocumentManagement = () => {
                   value={uploadTitle}
                   onChange={(e) => setUploadTitle(e.target.value)}
                   placeholder="e.g., FY2026_Engineering_Roadmap.pdf"
-                  className="clay-input technical-select text-xs"
+                  className="shadcn-input technical-select text-xs"
                 />
               </div>
 
@@ -543,7 +543,7 @@ export const DocumentManagement = () => {
                   value={uploadTextContent}
                   onChange={(e) => setUploadTextContent(e.target.value)}
                   placeholder="Paste raw documentation, policies, or report excerpts here..."
-                  className="clay-input text-xs resize-none"
+                  className="shadcn-input text-xs resize-none"
                 />
               </div>
 
@@ -551,14 +551,14 @@ export const DocumentManagement = () => {
                 <button
                   type="button"
                   onClick={() => setUploadModalOpen(false)}
-                  className="neubrutalist-btn text-xs"
+                  className="shadcn-btn text-xs"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={uploading}
-                  className="neubrutalist-btn-primary text-xs flex items-center gap-2"
+                  className="shadcn-btn-primary text-xs flex items-center gap-2"
                 >
                   {uploading ? "Chunking & Embedding..." : "Ingest into Vault"}
                 </button>
@@ -571,8 +571,8 @@ export const DocumentManagement = () => {
 
       {/* Chunk Inspector Modal */}
       {inspectorDoc && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in">
-          <div className="clay-card p-6 md:p-8 max-w-2xl w-full space-y-4 border border-slate-200 dark:border-vault-border max-h-[85vh] flex flex-col">
+        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden overscroll-none bg-black/60 p-4 backdrop-blur-sm animate-in fade-in">
+          <div className="shadcn-card flex min-h-0 max-h-[85vh] w-full max-w-2xl flex-col space-y-4 overflow-hidden border border-slate-200 p-6 dark:border-vault-border md:p-8">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-vault-border">
               <div className="flex items-center gap-2">
                 <Layers className="w-5 h-5 text-indigo-600 dark:text-cyan-400" />
@@ -613,7 +613,11 @@ export const DocumentManagement = () => {
                 No chunks available for this document.
               </div>
             ) : (
-              <div className="flex-1 overflow-y-auto space-y-3 pr-1">
+              <div
+                onWheel={(event) => event.stopPropagation()}
+                onTouchMove={(event) => event.stopPropagation()}
+                className="modal-scroll-area min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain pr-1"
+              >
                 {chunks.map((c, i) => (
                   <div key={i} className="p-4 rounded-2xl bg-slate-50 dark:bg-vault-card border border-slate-200/70 dark:border-vault-border text-xs space-y-2">
                     <div className="flex items-center justify-between text-[11px] font-mono text-slate-400">
@@ -633,7 +637,7 @@ export const DocumentManagement = () => {
             <div className="pt-2 flex justify-end">
               <button
                 onClick={() => setInspectorDoc(null)}
-                className="neubrutalist-btn text-xs"
+                className="shadcn-btn text-xs"
               >
                 Close Inspector
               </button>

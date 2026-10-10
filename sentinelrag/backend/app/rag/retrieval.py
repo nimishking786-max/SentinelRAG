@@ -48,7 +48,8 @@ class SecureRetriever:
         query_embedding: List[float], 
         current_user: TokenData, 
         limit: int = 5,
-        query_text: str = ""
+        query_text: str = "",
+        document_id: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
         Performs vector similarity search with PRE-RETRIEVAL Role-Based Access Control.
@@ -80,6 +81,14 @@ class SecureRetriever:
                 authorized_doc_ids.append(doc_id_str)
             else:
                 denied_doc_ids.append(doc_id_str)
+
+        if document_id:
+            if document_id in authorized_doc_ids:
+                authorized_doc_ids = [document_id]
+                denied_doc_ids = []
+            else:
+                authorized_doc_ids = []
+                denied_doc_ids = [document_id] if document_id in doc_lookup else []
 
         # 2. Check if query matches any DENIED documents for security awareness
         denied_attempt_matches = []

@@ -14,6 +14,7 @@ router = APIRouter()
 class ChatRequest(BaseModel):
     query: str
     conversation_id: Optional[str] = None
+    document_id: Optional[str] = None
 
 class CitationItem(BaseModel):
     document_id: Optional[str] = None
@@ -79,7 +80,8 @@ async def chat(req: ChatRequest, current_user: TokenData = Depends(get_current_u
         query_embedding=query_embedding, 
         current_user=current_user, 
         limit=3,
-        query_text=req.query
+        query_text=req.query,
+        document_id=req.document_id,
     )
     chunks = retrieval_result["chunks"]
     stats = retrieval_result["stats"]

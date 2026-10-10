@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { PasswordInput } from './ui/PasswordInput';
 import { 
   MessageSquare, 
   FolderLock, 
@@ -22,14 +23,15 @@ export const Navbar = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'register' | null>(null);
-  const [authForm, setAuthForm] = useState({ fullName: '', email: '', password: '', department: 'GENERAL' });
+  const [authForm, setAuthForm] = useState({ fullName: '', email: '', password: '' });
   const [authError, setAuthError] = useState<string | null>(null);
   const [authSubmitting, setAuthSubmitting] = useState(false);
 
+  const canManageVault = ['ADMIN', 'HR_MANAGER', 'FINANCE_MANAGER'].includes(currentUser?.role || '');
   const navLinks = [
     { to: '/', label: 'Overview', icon: Zap },
     { to: '/chat', label: 'Secure Chat', icon: MessageSquare },
-    { to: '/documents', label: 'Vault', icon: FolderLock },
+    ...(canManageVault ? [{ to: '/documents', label: 'Vault', icon: FolderLock }] : []),
     { to: '/security', label: 'Security Center', icon: ShieldAlert },
   ];
 
@@ -54,10 +56,10 @@ export const Navbar = () => {
       if (authMode === 'login') {
         await login(authForm.email, authForm.password);
       } else {
-        await register(authForm.fullName, authForm.email, authForm.password, authForm.department);
+        await register(authForm.fullName, authForm.email, authForm.password);
       }
       setAuthMode(null);
-      setAuthForm({ fullName: '', email: '', password: '', department: 'GENERAL' });
+      setAuthForm({ fullName: '', email: '', password: '' });
     } catch (error: any) {
       const detail = error?.response?.data?.detail;
       setAuthError(typeof detail === 'string' ? detail : 'Authentication failed');
@@ -190,14 +192,16 @@ export const Navbar = () => {
                 <Link to="/profile" className="mt-2 flex items-center justify-center gap-1 rounded-xl border border-slate-200 px-2 py-2 text-[11px] font-semibold hover:border-[#FF6A1A] hover:text-[#FF6A1A] dark:border-vault-border">
                   <Settings className="h-3.5 w-3.5" /> View profile
                 </Link>
-                <div className="mt-2 pt-2 border-t border-slate-100 dark:border-vault-border grid grid-cols-2 gap-2">
-                  <button onClick={() => setAuthMode('login')} className="flex items-center justify-center gap-1 rounded-xl px-2 py-2 text-[11px] font-semibold hover:bg-slate-100 dark:hover:bg-slate-800">
-                    <LogIn className="w-3.5 h-3.5" /> Login
-                  </button>
-                  <button onClick={() => setAuthMode('register')} className="flex items-center justify-center gap-1 rounded-xl px-2 py-2 text-[11px] font-semibold hover:bg-slate-100 dark:hover:bg-slate-800">
-                    <UserPlus className="w-3.5 h-3.5" /> Register
-                  </button>
-                </div>
+                {!currentUser && (
+                  <div className="mt-2 pt-2 border-t border-slate-100 dark:border-vault-border grid grid-cols-2 gap-2">
+                    <button onClick={() => setAuthMode('login')} className="flex items-center justify-center gap-1 rounded-xl px-2 py-2 text-[11px] font-semibold hover:bg-slate-100 dark:hover:bg-slate-800">
+                      <LogIn className="w-3.5 h-3.5" /> Login
+                    </button>
+                    <button onClick={() => setAuthMode('register')} className="flex items-center justify-center gap-1 rounded-xl px-2 py-2 text-[11px] font-semibold hover:bg-slate-100 dark:hover:bg-slate-800">
+                      <UserPlus className="w-3.5 h-3.5" /> Register
+                    </button>
+                  </div>
+                )}
                 {currentUser && (
                   <button onClick={logout} className="mt-1 w-full flex items-center justify-center gap-1 rounded-xl px-2 py-2 text-[11px] font-semibold text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30">
                     <LogOut className="w-3.5 h-3.5" /> Sign out
@@ -252,23 +256,25 @@ export const Navbar = () => {
       )}
       {authMode && (
         <div className="fixed inset-0 z-[60] bg-black/60 flex items-center justify-center p-4">
-          <form onSubmit={submitAuth} className="clay-card bg-white dark:bg-vault-surface w-full max-w-md p-6 space-y-4">
+          <form onSubmit={submitAuth} className="shadcn-card bg-white dark:bg-vault-surface w-full max-w-md p-6 space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-bold">{authMode === 'login' ? 'Sign in to SentinelRAG' : 'Create your account'}</h2>
               <button type="button" onClick={() => setAuthMode(null)} className="text-slate-400">✕</button>
             </div>
             {authError && <div className="rounded-xl bg-red-50 text-red-700 p-3 text-xs">{authError}</div>}
             {authMode === 'register' && (
-              <input required placeholder="Full name" value={authForm.fullName} onChange={(e) => setAuthForm({ ...authForm, fullName: e.target.value })} className="clay-input w-full" />
+              <input required placeholder="Full name" value={authForm.fullName} onChange={(e) => setAuthForm({ ...authForm, fullName: e.target.value })} className="shadcn-input w-full" />
             )}
-            <input required type="email" placeholder="Email" value={authForm.email} onChange={(e) => setAuthForm({ ...authForm, email: e.target.value })} className="clay-input w-full" />
-            <input required minLength={8} type="password" placeholder="Password (minimum 8 characters)" value={authForm.password} onChange={(e) => setAuthForm({ ...authForm, password: e.target.value })} className="clay-input w-full" />
-            {authMode === 'register' && (
-              <select value={authForm.department} onChange={(e) => setAuthForm({ ...authForm, department: e.target.value })} className="clay-input w-full">
-                <option>GENERAL</option><option>HR</option><option>FINANCE</option><option>SALES</option><option>RESEARCH</option>
-              </select>
-            )}
-            <button disabled={authSubmitting} className="neubrutalist-btn-primary w-full">
+            <input required type="email" placeholder="Email" value={authForm.email} onChange={(e) => setAuthForm({ ...authForm, email: e.target.value })} className="shadcn-input w-full" />
+            <PasswordInput
+              required
+              minLength={8}
+              placeholder="Password (minimum 8 characters)"
+              value={authForm.password}
+              onChange={(password) => setAuthForm({ ...authForm, password })}
+              autoComplete={authMode === 'login' ? 'current-password' : 'new-password'}
+            />
+            <button disabled={authSubmitting} className="shadcn-btn-primary w-full">
               {authSubmitting ? 'Please wait...' : authMode === 'login' ? 'Sign in' : 'Create account'}
             </button>
             <button type="button" onClick={() => setAuthMode(authMode === 'login' ? 'register' : 'login')} className="w-full text-xs text-indigo-600">

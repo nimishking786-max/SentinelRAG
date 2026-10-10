@@ -205,6 +205,10 @@ async def list_all_documents_with_clearance(current_user: TokenData = Depends(ge
         doc_item = dict(doc)
         doc_item["allowed_roles"] = ", ".join(doc_perms) if doc_perms else doc.get("department", "GENERAL")
         doc_item["is_accessible"] = can_access
+        doc_item["can_delete"] = (
+            current_user.role == "ADMIN"
+            or str(doc.get("uploaded_by")) == str(current_user.user_id)
+        )
         doc_item["chunk_count"] = chunk_counts.get(doc_id_str, 2)
         result.append(doc_item)
 
@@ -235,17 +239,36 @@ async def get_document_chunks(doc_id: str, current_user: TokenData = Depends(get
     }
 
 @router.delete("/{doc_id}")
-async def delete_document(doc_id: str, current_user: TokenData = Depends(RBAC.require_role(["ADMIN"]))):
-    documents = supabase_client.table("documents").select("file_path").eq("id", doc_id).execute().data or []
-    if documents and documents[0].get("file_path"):
+async def delete_document(doc_id: str, current_user: TokenData = Depends(get_current_user)):
+    documents = supabase_client.table("documents").select("file_path, uploaded_by, title").eq("id", doc_id).execute().data or []
+    if not documents:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Document not found")
+
+    document = documents[0]
+    is_owner = str(document.get("uploaded_by")) == str(current_user.user_id)
+    if current_user.role != "ADMIN" and not is_owner:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only the uploader or an administrator can delete this document.",
+        )
+
+    if document.get("file_path"):
         try:
-            supabase_client.delete_file("documents", documents[0]["file_path"])
+            supabase_client.delete_file("documents", document["file_path"])
         except Exception as storage_error:
             raise HTTPException(
                 status_code=status.HTTP_502_BAD_GATEWAY,
                 detail=f"Could not remove the stored file: {storage_error}",
             )
     supabase_client.table("documents").eq("id", doc_id).delete().execute()
-    supabase_client.table("document_chunks").eq("document_id", doc_id).delete()
-    supabase_client.table("document_permissions").eq("document_id", doc_id).delete()
+    supabase_client.table("document_chunks").delete().eq("document_id", doc_id).execute()
+    supabase_client.table("document_permissions").delete().eq("document_id", doc_id).execute()
+    SecurityAuditLogger.log_audit(
+        user_id=current_user.user_id,
+        action="DOCUMENT_DELETE",
+        resource_type="documents",
+        resource_id=doc_id,
+        status="SUCCESS",
+        metadata={"title": document.get("title"), "is_owner": is_owner},
+    )
     return {"status": "deleted", "document_id": doc_id}
