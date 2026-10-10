@@ -327,20 +327,9 @@ export const DocumentManagement = () => {
                 }`}
               >
                 {/* Uploaders and administrators can remove documents. */}
-                {doc.can_delete && (
-                  <button
-                    onClick={() => handleDelete(doc.id)}
-                      className="absolute right-4 top-4 rounded-lg border border-rose-300 p-2 text-rose-500 transition-colors hover:bg-rose-50 hover:text-rose-600 dark:border-rose-900 dark:text-rose-400 dark:hover:bg-rose-950/40 dark:hover:text-rose-300"
-                    title="Delete Document"
-                      aria-label={`Delete ${doc.title}`}
-                    >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                )}
-
                 <div className="space-y-4">
-                  {/* Clearance Indicator Badge */}
-                  <div className="flex items-center justify-between">
+                    {/* Clearance Indicator Badge */}
+                    <div className="flex items-center justify-between">
                     <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider inline-flex items-center gap-1.5 border ${
                       isAccessible
                         ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/70 dark:text-emerald-400 border-emerald-300 dark:border-emerald-800'
@@ -350,9 +339,21 @@ export const DocumentManagement = () => {
                       {isAccessible ? 'Clearance Granted' : 'Access Restricted'}
                     </span>
 
-                    <span className="text-[11px] font-mono text-slate-400">
-                      {doc.chunk_count || 2} Chunks
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[11px] font-mono text-slate-400">
+                        {doc.chunk_count || 2} Chunks
+                      </span>
+                      {doc.can_delete && (
+                        <button
+                          onClick={() => handleDelete(doc.id)}
+                          className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-rose-300 text-rose-500 transition-colors hover:bg-rose-50 hover:text-rose-600 dark:border-rose-900 dark:text-rose-400 dark:hover:bg-rose-950/40 dark:hover:text-rose-300"
+                          title="Delete Document"
+                          aria-label={`Delete ${doc.title}`}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+                    </div>
                   </div>
 
                   {/* Document Title & File Info */}
