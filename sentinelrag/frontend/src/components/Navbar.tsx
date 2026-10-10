@@ -191,14 +191,16 @@ export const Navbar = () => {
                 <Link to="/profile" className="mt-2 flex items-center justify-center gap-1 rounded-xl border border-slate-200 px-2 py-2 text-[11px] font-semibold hover:border-[#FF6A1A] hover:text-[#FF6A1A] dark:border-vault-border">
                   <Settings className="h-3.5 w-3.5" /> View profile
                 </Link>
-                <div className="mt-2 pt-2 border-t border-slate-100 dark:border-vault-border grid grid-cols-2 gap-2">
-                  <button onClick={() => setAuthMode('login')} className="flex items-center justify-center gap-1 rounded-xl px-2 py-2 text-[11px] font-semibold hover:bg-slate-100 dark:hover:bg-slate-800">
-                    <LogIn className="w-3.5 h-3.5" /> Login
-                  </button>
-                  <button onClick={() => setAuthMode('register')} className="flex items-center justify-center gap-1 rounded-xl px-2 py-2 text-[11px] font-semibold hover:bg-slate-100 dark:hover:bg-slate-800">
-                    <UserPlus className="w-3.5 h-3.5" /> Register
-                  </button>
-                </div>
+                {!currentUser && (
+                  <div className="mt-2 pt-2 border-t border-slate-100 dark:border-vault-border grid grid-cols-2 gap-2">
+                    <button onClick={() => setAuthMode('login')} className="flex items-center justify-center gap-1 rounded-xl px-2 py-2 text-[11px] font-semibold hover:bg-slate-100 dark:hover:bg-slate-800">
+                      <LogIn className="w-3.5 h-3.5" /> Login
+                    </button>
+                    <button onClick={() => setAuthMode('register')} className="flex items-center justify-center gap-1 rounded-xl px-2 py-2 text-[11px] font-semibold hover:bg-slate-100 dark:hover:bg-slate-800">
+                      <UserPlus className="w-3.5 h-3.5" /> Register
+                    </button>
+                  </div>
+                )}
                 {currentUser && (
                   <button onClick={logout} className="mt-1 w-full flex items-center justify-center gap-1 rounded-xl px-2 py-2 text-[11px] font-semibold text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30">
                     <LogOut className="w-3.5 h-3.5" /> Sign out
