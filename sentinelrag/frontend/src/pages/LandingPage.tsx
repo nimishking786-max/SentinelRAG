@@ -113,7 +113,7 @@ export const LandingPage = () => {
           </h1>
 
           <p data-hero-copy className="mt-6 max-w-[520px] text-[clamp(.9rem,1vw,1.05rem)] leading-relaxed text-slate-200/80">
-            SentinelRAG checks your JWT role and department before retrieval, blocks hostile prompts, and redacts sensitive identifiers from answers.
+            SentinelRAG checks your authenticated role and department before document retrieval, blocks matched prompt-injection patterns, and masks supported PII patterns in answers.
           </p>
 
           <div data-hero-actions className="mt-8 flex flex-wrap gap-3">
@@ -150,7 +150,7 @@ export const LandingPage = () => {
             The Zero-Trust Pipeline
           </h2>
           <p className="text-[clamp(.95rem,1.1vw,1.1rem)] leading-relaxed text-slate-600 dark:text-slate-400">
-            How SentinelRAG authenticates users, filters authorized document chunks, and sanitizes every generated answer
+            How SentinelRAG authenticates users, filters authorized document chunks, and sanitizes chat answers
           </p>
         </div>
 
@@ -165,29 +165,29 @@ export const LandingPage = () => {
             },
             {
               step: '02',
-              title: 'PromptGuard 2.0',
-              desc: 'PromptGuard blocks jailbreaks, system-prompt extraction, DAN overrides, and delimiter injection attempts.',
+              title: 'PromptGuard',
+              desc: 'PromptGuard checks for configured jailbreak, system-prompt extraction, DAN, override, and delimiter-injection patterns.',
               icon: ShieldCheck,
               color: 'text-emerald-500'
             },
             {
               step: '03',
               title: 'Pre-Retrieval Filter',
-              desc: 'Role, department, sensitivity, and document permissions filter unauthorized records before vector search.',
+              desc: 'Role, department, sensitivity, and document permissions filter unauthorized records before retrieval.',
               icon: Lock,
               color: 'text-amber-500'
             },
             {
               step: '04',
               title: 'Sterile Context LLM',
-              desc: 'Only chunks that pass the permission filter are sent to the configured LLM for grounded answers with citations.',
+              desc: 'Only retrieved chunks that pass the permission filter are sent to the configured LLM, with returned source citations.',
               icon: Cpu,
               color: 'text-blue-500'
             },
             {
               step: '05',
               title: 'PII Sanitization',
-              desc: 'The response sanitizer masks SSNs, bank-account values, card numbers, and other detected identifiers before display.',
+              desc: 'The response sanitizer masks supported SSN, bank, card, email, and phone patterns before display.',
               icon: EyeOff,
               color: 'text-rose-500'
             }
@@ -254,7 +254,7 @@ export const LandingPage = () => {
                   </span>
                 </td>
                 <td className="py-5 text-xs text-slate-600 dark:text-slate-300">
-                  Retrieves 3 chunks, answers $4.2M with citations.
+                  Authorized chunks are retrieved and returned with source citations.
                 </td>
               </tr>
 
@@ -282,7 +282,7 @@ export const LandingPage = () => {
                   </span>
                 </td>
                 <td className="py-5 text-xs text-slate-600 dark:text-slate-300">
-                  Answers salary, masks SSN and Bank Account.
+                  Returns authorized content with detected PII patterns masked.
                 </td>
               </tr>
 
@@ -296,7 +296,7 @@ export const LandingPage = () => {
                   </span>
                 </td>
                 <td className="py-5 text-xs text-slate-600 dark:text-slate-300">
-                  PromptGuard halts execution. Critical audit logged.
+                  The request is blocked and a security event is logged.
                 </td>
               </tr>
             </tbody>
@@ -312,7 +312,7 @@ export const LandingPage = () => {
           </div>
           <h4 className="technical-feature-card__title">Permission-Aware Retrieval</h4>
           <p className="technical-feature-card__description">
-            Document department and sensitivity metadata are combined with user role matrices in PostgreSQL before similarity calculations occur.
+            Document department, sensitivity, and assigned-role permissions are checked before similarity search, so only authorized document IDs are searched.
           </p>
         </div>
 
@@ -322,7 +322,7 @@ export const LandingPage = () => {
           </div>
           <h4 className="technical-feature-card__title">Active PII Sanitization</h4>
           <p className="technical-feature-card__description">
-            Real-time heuristic and regex filters automatically redact SSNs, banking credentials, credit cards, and sensitive identifiers.
+            Output sanitization uses regex rules to mask detected SSNs, card numbers, emails, phone numbers, and supported bank identifiers.
           </p>
         </div>
 
@@ -332,7 +332,7 @@ export const LandingPage = () => {
           </div>
           <h4 className="technical-feature-card__title">Security Audit Trails</h4>
           <p className="technical-feature-card__description">
-            Every query, retrieval decision, rejected match, and prompt-injection attempt is recorded with user and security metadata.
+            Chat queries, denied document matches, blocked prompt-injection attempts, and PII redactions are recorded with user, status, and security metadata.
           </p>
         </div>
       </section>

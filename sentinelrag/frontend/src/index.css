@@ -470,6 +470,58 @@ html:not(.dark) .glass-panel {
   border-color: rgba(148, 163, 184, 0.3);
 }
 
+html:not(.dark) .pipeline-security-card,
+html:not(.dark) .technical-feature-card {
+  border-color: #cbd0d8;
+  background: #fffdfa;
+  box-shadow:
+    4px 4px 0 rgba(148, 163, 184, 0.32),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+}
+
+html:not(.dark) .pipeline-security-card::before,
+html:not(.dark) .technical-feature-card::before {
+  background: #d99025;
+}
+
+html:not(.dark) .pipeline-security-card:hover,
+html:not(.dark) .technical-feature-card:hover {
+  border-color: #b7791f;
+  background: #fffaf1;
+  box-shadow:
+    5px 6px 0 rgba(148, 163, 184, 0.38),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+}
+
+html:not(.dark) .pipeline-security-card__stage {
+  color: #687180;
+}
+
+html:not(.dark) .pipeline-security-card__stage::before {
+  background: #d99025;
+}
+
+html:not(.dark) .pipeline-security-card__icon,
+html:not(.dark) .technical-feature-card__icon {
+  border-color: #d9dde4;
+  background: #f4f5f7;
+}
+
+html:not(.dark) .pipeline-security-card:hover .pipeline-security-card__icon,
+html:not(.dark) .technical-feature-card:hover .technical-feature-card__icon {
+  border-color: #d99025;
+}
+
+html:not(.dark) .pipeline-security-card__title,
+html:not(.dark) .technical-feature-card__title {
+  color: #172033;
+}
+
+html:not(.dark) .pipeline-security-card__description,
+html:not(.dark) .technical-feature-card__description {
+  color: #596273;
+}
+
 /* Liquid Glass utility surfaces */
 .liquid-glass {
   background: linear-gradient(135deg, rgba(255,255,255,.62), rgba(255,255,255,.25));
