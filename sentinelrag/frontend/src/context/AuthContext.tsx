@@ -19,7 +19,7 @@ interface AuthContextType {
   toggleDarkMode: () => void;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (fullName: string, email: string, password: string, department: string) => Promise<void>;
+  register: (fullName: string, email: string, password: string, department?: string) => Promise<void>;
   logout: () => void;
   changePassword: (currentPassword: string, newPassword: string) => Promise<void>;
   updateAvatar: (file: File) => Promise<void>;
@@ -130,7 +130,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.setItem('sentinel_user_id', user.id);
   };
 
-  const register = async (fullName: string, email: string, password: string, department: string) => {
+  const register = async (fullName: string, email: string, password: string, department = 'GENERAL') => {
     const res = await api.post('/auth/register', {
       full_name: fullName,
       email,

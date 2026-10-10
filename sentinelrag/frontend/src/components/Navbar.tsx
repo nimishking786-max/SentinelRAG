@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { ThemedSelect } from './ui/ThemedSelect';
 import { 
   MessageSquare, 
   FolderLock, 
@@ -23,7 +22,7 @@ export const Navbar = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'register' | null>(null);
-  const [authForm, setAuthForm] = useState({ fullName: '', email: '', password: '', department: 'GENERAL' });
+  const [authForm, setAuthForm] = useState({ fullName: '', email: '', password: '' });
   const [authError, setAuthError] = useState<string | null>(null);
   const [authSubmitting, setAuthSubmitting] = useState(false);
 
@@ -55,10 +54,10 @@ export const Navbar = () => {
       if (authMode === 'login') {
         await login(authForm.email, authForm.password);
       } else {
-        await register(authForm.fullName, authForm.email, authForm.password, authForm.department);
+        await register(authForm.fullName, authForm.email, authForm.password);
       }
       setAuthMode(null);
-      setAuthForm({ fullName: '', email: '', password: '', department: 'GENERAL' });
+      setAuthForm({ fullName: '', email: '', password: '' });
     } catch (error: any) {
       const detail = error?.response?.data?.detail;
       setAuthError(typeof detail === 'string' ? detail : 'Authentication failed');
@@ -266,14 +265,6 @@ export const Navbar = () => {
             )}
             <input required type="email" placeholder="Email" value={authForm.email} onChange={(e) => setAuthForm({ ...authForm, email: e.target.value })} className="clay-input w-full" />
             <input required minLength={8} type="password" placeholder="Password (minimum 8 characters)" value={authForm.password} onChange={(e) => setAuthForm({ ...authForm, password: e.target.value })} className="clay-input w-full" />
-            {authMode === 'register' && (
-              <ThemedSelect
-                value={authForm.department}
-                onChange={(department) => setAuthForm({ ...authForm, department })}
-                options={['GENERAL', 'HR', 'FINANCE', 'SALES', 'RESEARCH'].map((department) => ({ value: department, label: department }))}
-                aria-label="Department"
-              />
-            )}
             <button disabled={authSubmitting} className="neubrutalist-btn-primary w-full">
               {authSubmitting ? 'Please wait...' : authMode === 'login' ? 'Sign in' : 'Create account'}
             </button>

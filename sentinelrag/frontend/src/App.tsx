@@ -12,12 +12,11 @@ import { useAuth } from './context/AuthContext';
 import { BackgroundBeams } from './components/aceternity/BackgroundBeams';
 import { SmoothScroll } from './components/SmoothScroll';
 import { ProfilePage } from './pages/ProfilePage';
-import { ThemedSelect } from './components/ui/ThemedSelect';
 
 const AuthScreen = () => {
   const { login, register } = useAuth();
   const [mode, setMode] = useState<'login' | 'register'>('login');
-  const [form, setForm] = useState({ fullName: '', email: '', password: '', department: 'GENERAL' });
+  const [form, setForm] = useState({ fullName: '', email: '', password: '' });
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -27,7 +26,7 @@ const AuthScreen = () => {
     setError(null);
     try {
       if (mode === 'login') await login(form.email, form.password);
-      else await register(form.fullName, form.email, form.password, form.department);
+      else await register(form.fullName, form.email, form.password);
     } catch (err: any) {
       const detail = err?.response?.data?.detail;
       setError(typeof detail === 'string' ? detail : 'Authentication failed');
@@ -50,14 +49,6 @@ const AuthScreen = () => {
         )}
         <input required type="email" placeholder="Email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="clay-input w-full" />
         <input required minLength={8} type="password" placeholder="Password (minimum 8 characters)" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} className="clay-input w-full" />
-        {mode === 'register' && (
-          <ThemedSelect
-            value={form.department}
-            onChange={(department) => setForm({ ...form, department })}
-            options={['GENERAL', 'HR', 'FINANCE', 'SALES', 'RESEARCH'].map((department) => ({ value: department, label: department }))}
-            aria-label="Department"
-          />
-        )}
         <button disabled={submitting} className="neubrutalist-btn-primary w-full">{submitting ? 'Please wait...' : mode === 'login' ? 'Sign in' : 'Create account'}</button>
         <button type="button" onClick={() => { setMode(mode === 'login' ? 'register' : 'login'); setError(null); }} className="w-full text-xs text-indigo-600">
           {mode === 'login' ? 'First time here? Create an account' : 'Already have an account? Sign in'}
