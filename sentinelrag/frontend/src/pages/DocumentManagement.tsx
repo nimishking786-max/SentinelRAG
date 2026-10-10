@@ -330,9 +330,10 @@ export const DocumentManagement = () => {
                 {doc.can_delete && (
                   <button
                     onClick={() => handleDelete(doc.id)}
-                    className="absolute top-4 right-4 p-2 text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="absolute right-4 top-4 rounded-lg border border-rose-300 p-2 text-rose-500 transition-colors hover:bg-rose-50 hover:text-rose-600 dark:border-rose-900 dark:text-rose-400 dark:hover:bg-rose-950/40 dark:hover:text-rose-300"
                     title="Delete Document"
-                  >
+                      aria-label={`Delete ${doc.title}`}
+                    >
                     <Trash2 className="w-4 h-4" />
                   </button>
                 )}
