@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Navigate, Routes, Route } from 'react-router-dom';
 import gsap from 'gsap';
 import { AuthProvider } from './context/AuthContext';
 import { Navbar } from './components/Navbar';
@@ -163,6 +163,7 @@ const App = () => {
   if (loading || !loaderComplete) return <LoadingScreen onComplete={finishLoader} />;
   if (!currentUser) return <AuthScreen />;
   if ((currentUser as any).must_change_password) return <RequiredPasswordChange />;
+  const canManageVault = ['ADMIN', 'HR_MANAGER', 'FINANCE_MANAGER'].includes(currentUser.role);
 
   return (
       <div className="relative min-h-screen flex flex-col bg-slate-50 text-slate-900 transition-colors dark:bg-[#070b14] dark:text-slate-100">
@@ -173,7 +174,7 @@ const App = () => {
           <Routes>
             <Route path="/" element={<LandingPage />} />
             <Route path="/chat" element={<ChatPage />} />
-            <Route path="/documents" element={<DocumentManagement />} />
+            <Route path="/documents" element={canManageVault ? <DocumentManagement /> : <Navigate to="/chat" replace />} />
             <Route path="/security" element={<SecurityDashboard />} />
             <Route path="/profile" element={<ProfilePage />} />
           </Routes>

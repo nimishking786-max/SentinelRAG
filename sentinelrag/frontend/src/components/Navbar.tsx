@@ -27,10 +27,11 @@ export const Navbar = () => {
   const [authError, setAuthError] = useState<string | null>(null);
   const [authSubmitting, setAuthSubmitting] = useState(false);
 
+  const canManageVault = ['ADMIN', 'HR_MANAGER', 'FINANCE_MANAGER'].includes(currentUser?.role || '');
   const navLinks = [
     { to: '/', label: 'Overview', icon: Zap },
     { to: '/chat', label: 'Secure Chat', icon: MessageSquare },
-    { to: '/documents', label: 'Vault', icon: FolderLock },
+    ...(canManageVault ? [{ to: '/documents', label: 'Vault', icon: FolderLock }] : []),
     { to: '/security', label: 'Security Center', icon: ShieldAlert },
   ];
 
