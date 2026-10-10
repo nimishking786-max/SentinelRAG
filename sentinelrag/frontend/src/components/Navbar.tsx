@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { 
-  Shield, 
   MessageSquare, 
   FolderLock, 
   ShieldAlert, 
@@ -13,13 +12,19 @@ import {
   Menu, 
   X,
   Zap
+  , LogIn,   UserPlus, LogOut, Settings
 } from 'lucide-react';
 
 export const Navbar = () => {
-  const { currentUser, availableUsers, switchUser, darkMode, toggleDarkMode } = useAuth();
+  const { currentUser, availableUsers, darkMode, toggleDarkMode, login, register, logout } = useAuth();
   const location = useLocation();
+  const isLandingPage = location.pathname === '/';
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [authMode, setAuthMode] = useState<'login' | 'register' | null>(null);
+  const [authForm, setAuthForm] = useState({ fullName: '', email: '', password: '', department: 'GENERAL' });
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [authSubmitting, setAuthSubmitting] = useState(false);
 
   const navLinks = [
     { to: '/', label: 'Overview', icon: Zap },
@@ -31,36 +36,60 @@ export const Navbar = () => {
   const getRoleBadgeStyle = (role?: string) => {
     switch (role) {
       case 'ADMIN':
-        return 'bg-purple-100 text-purple-700 dark:bg-purple-950/70 dark:text-purple-300 border-purple-300 dark:border-purple-800';
+        return 'text-amber-200';
       case 'FINANCE_MANAGER':
-        return 'bg-blue-100 text-blue-700 dark:bg-blue-950/70 dark:text-blue-300 border-blue-300 dark:border-blue-800';
+        return 'text-sky-200';
       case 'HR_MANAGER':
-        return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/70 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800';
+        return 'text-emerald-200';
       default:
-        return 'bg-amber-100 text-amber-700 dark:bg-amber-950/70 dark:text-amber-300 border-amber-300 dark:border-amber-800';
+        return 'text-white/70';
+    }
+  };
+
+  const submitAuth = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setAuthSubmitting(true);
+    setAuthError(null);
+    try {
+      if (authMode === 'login') {
+        await login(authForm.email, authForm.password);
+      } else {
+        await register(authForm.fullName, authForm.email, authForm.password, authForm.department);
+      }
+      setAuthMode(null);
+      setAuthForm({ fullName: '', email: '', password: '', department: 'GENERAL' });
+    } catch (error: any) {
+      const detail = error?.response?.data?.detail;
+      setAuthError(typeof detail === 'string' ? detail : 'Authentication failed');
+    } finally {
+      setAuthSubmitting(false);
     }
   };
 
   return (
-    <header className="sticky top-0 z-50 px-4 py-3 max-w-7xl mx-auto w-full">
-      <nav className="glass-panel px-5 py-3 flex items-center justify-between gap-4 border border-white/40 dark:border-vault-border/80 shadow-lg backdrop-blur-xl">
+    <header className={`${isLandingPage ? 'absolute' : 'relative'} inset-x-0 top-0 z-50 w-full px-5 py-5 lg:px-8`}>
+      <nav className={`mx-auto flex w-full max-w-[1440px] items-center justify-between gap-4 px-1 py-2.5 lg:px-2 ${!isLandingPage ? 'glass-panel rounded-2xl px-4' : ''}`}>
         {/* Brand Logo */}
-        <Link to="/" className="flex items-center gap-2.5 group">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-600 via-blue-600 to-cyan-400 flex items-center justify-center text-white shadow-md group-hover:scale-105 transition-transform">
-            <Shield className="w-5 h-5 text-white" />
+        <Link to="/" className="group flex items-center gap-2.5">
+          <div className="h-10 w-10 overflow-hidden rounded-full border border-white/30 bg-slate-900 shadow-lg shadow-black/20 transition-transform group-hover:scale-105">
+            <img
+              src="/sentinel-icon.jpg"
+              alt=""
+              className="h-full w-full object-cover"
+            />
           </div>
           <div>
-            <div className="font-extrabold text-lg tracking-tight bg-gradient-to-r from-indigo-600 to-cyan-500 bg-clip-text text-transparent">
+            <div className={`text-lg font-extrabold tracking-tight ${isLandingPage ? 'text-amber-100' : 'text-slate-900 dark:text-amber-100'}`}>
               SentinelRAG
             </div>
-            <div className="text-[10px] tracking-wider uppercase font-semibold text-slate-500 dark:text-slate-400">
+            <div className={`text-[10px] font-semibold uppercase tracking-wider ${isLandingPage ? 'text-white/55' : 'text-slate-500 dark:text-white/55'}`}>
               Zero-Trust AI Vault
             </div>
           </div>
         </Link>
 
         {/* Desktop Nav Links */}
-        <div className="hidden md:flex items-center gap-1.5 bg-slate-100/70 dark:bg-vault-card/70 p-1.5 rounded-2xl border border-slate-200/50 dark:border-vault-border/60">
+        <div className="hidden items-center gap-5 md:flex">
           {navLinks.map((link) => {
             const isActive = location.pathname === link.to;
             const Icon = link.icon;
@@ -68,10 +97,10 @@ export const Navbar = () => {
               <Link
                 key={link.to}
                 to={link.to}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
+                className={`flex items-center gap-2 px-1 py-2 text-xs font-semibold transition-all ${
                   isActive
-                    ? 'bg-white dark:bg-vault-surface text-indigo-600 dark:text-cyan-400 shadow-sm border border-slate-200/40 dark:border-vault-border'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/40 dark:hover:bg-slate-800/40'
+                    ? isLandingPage ? 'text-white' : 'text-slate-900 dark:text-white'
+                    : isLandingPage ? 'text-white/55 hover:text-white' : 'text-slate-500 hover:text-slate-900 dark:text-white/55 dark:hover:text-white'
                 }`}
               >
                 <Icon className="w-3.5 h-3.5" />
@@ -87,9 +116,9 @@ export const Navbar = () => {
           <div className="relative">
             <button
               onClick={() => setDropdownOpen(!dropdownOpen)}
-              className="flex items-center gap-2.5 bg-white dark:bg-vault-card px-3.5 py-1.5 rounded-2xl border border-slate-200/70 dark:border-vault-border shadow-sm hover:border-indigo-400 dark:hover:border-indigo-500 transition-all text-left"
+              className="flex items-center gap-2.5 px-1 py-1.5 text-left transition-all hover:text-amber-100"
             >
-              <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-white text-xs font-bold overflow-hidden shadow-inner">
+              <div className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-full bg-gradient-to-tr from-amber-300 to-rose-500 text-xs font-bold text-white shadow-inner">
                 {currentUser?.avatar_url ? (
                   <img src={currentUser.avatar_url} alt="avatar" className="w-full h-full object-cover" />
                 ) : (
@@ -97,14 +126,14 @@ export const Navbar = () => {
                 )}
               </div>
               <div className="hidden sm:block">
-                <div className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate max-w-[120px]">
+                <div className={`max-w-[120px] truncate text-xs font-bold ${isLandingPage ? 'text-white' : 'text-slate-900 dark:text-white'}`}>
                   {currentUser?.full_name.split(' ')[0]}
                 </div>
-                <div className={`text-[10px] font-bold px-1.5 py-0.2 rounded-full border ${getRoleBadgeStyle(currentUser?.role)}`}>
+                <div className={`text-[10px] font-bold ${getRoleBadgeStyle(currentUser?.role)}`}>
                   {currentUser?.role || 'SIMULATOR'}
                 </div>
               </div>
-              <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+              <ChevronDown className={`h-3.5 w-3.5 ${isLandingPage ? 'text-white/60' : 'text-slate-500 dark:text-white/60'}`} />
             </button>
 
             {/* Persona Dropdown Menu */}
@@ -115,22 +144,22 @@ export const Navbar = () => {
               >
                 <div className="px-3 py-2 border-b border-slate-100 dark:border-vault-border mb-1">
                   <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                    Switch Security Persona
+                    Your Organization
                   </span>
-                  <p className="text-[11px] text-slate-500">Test how permissions dynamically reshape retrieval</p>
+                  <p className="text-[11px] text-slate-500">Peers are visible for context but cannot be selected.</p>
                 </div>
 
                 <div className="space-y-1">
                   {availableUsers.map((user) => {
                     const isSelected = currentUser?.id === user.id;
                     return (
-                      <button
+                      <div
                         key={user.id}
-                        onClick={() => switchUser(user)}
+                        aria-current={isSelected ? 'true' : undefined}
                         className={`w-full flex items-center gap-3 p-2 rounded-xl text-left transition-all ${
                           isSelected
                             ? 'bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 font-semibold'
-                            : 'hover:bg-slate-100 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-300'
+                            : 'text-slate-500 dark:text-slate-500 opacity-75'
                         }`}
                       >
                         <div className="w-8 h-8 rounded-full overflow-hidden bg-slate-200 shrink-0 border border-slate-300 dark:border-vault-border">
@@ -143,17 +172,37 @@ export const Navbar = () => {
                         <div className="flex-1 min-w-0">
                           <div className="text-xs font-bold truncate">{user.full_name}</div>
                           <div className="flex items-center gap-1.5 mt-0.5">
-                            <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${getRoleBadgeStyle(user.role)}`}>
+                            <span className={`text-[10px] font-semibold ${getRoleBadgeStyle(user.role)}`}>
                               {user.role}
                             </span>
                             <span className="text-[10px] text-slate-400 truncate">{user.department}</span>
                           </div>
                         </div>
-                        {isSelected && <div className="w-2 h-2 rounded-full bg-indigo-600 dark:bg-cyan-400 shrink-0"></div>}
-                      </button>
+                        {isSelected ? (
+                          <span className="text-[10px] font-semibold text-indigo-600 dark:text-cyan-400 shrink-0">You</span>
+                        ) : (
+                          <span className="text-[10px] text-slate-400 shrink-0">Peer</span>
+                        )}
+                      </div>
                     );
                   })}
                 </div>
+                <Link to="/profile" className="mt-2 flex items-center justify-center gap-1 rounded-xl border border-slate-200 px-2 py-2 text-[11px] font-semibold hover:border-[#FF6A1A] hover:text-[#FF6A1A] dark:border-vault-border">
+                  <Settings className="h-3.5 w-3.5" /> View profile
+                </Link>
+                <div className="mt-2 pt-2 border-t border-slate-100 dark:border-vault-border grid grid-cols-2 gap-2">
+                  <button onClick={() => setAuthMode('login')} className="flex items-center justify-center gap-1 rounded-xl px-2 py-2 text-[11px] font-semibold hover:bg-slate-100 dark:hover:bg-slate-800">
+                    <LogIn className="w-3.5 h-3.5" /> Login
+                  </button>
+                  <button onClick={() => setAuthMode('register')} className="flex items-center justify-center gap-1 rounded-xl px-2 py-2 text-[11px] font-semibold hover:bg-slate-100 dark:hover:bg-slate-800">
+                    <UserPlus className="w-3.5 h-3.5" /> Register
+                  </button>
+                </div>
+                {currentUser && (
+                  <button onClick={logout} className="mt-1 w-full flex items-center justify-center gap-1 rounded-xl px-2 py-2 text-[11px] font-semibold text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30">
+                    <LogOut className="w-3.5 h-3.5" /> Sign out
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -162,15 +211,15 @@ export const Navbar = () => {
           <button
             onClick={toggleDarkMode}
             aria-label="Toggle Theme"
-            className="p-2.5 rounded-2xl bg-white dark:bg-vault-card border border-slate-200/70 dark:border-vault-border text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-cyan-400 transition-colors shadow-sm"
+            className={`p-2.5 transition ${isLandingPage ? 'text-amber-200 hover:text-amber-100' : 'text-amber-600 hover:text-amber-700 dark:text-amber-200 dark:hover:text-amber-100'}`}
           >
-            {darkMode ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-indigo-600" />}
+            {darkMode ? <Sun className="w-4 h-4 text-amber-300" /> : <Moon className="w-4 h-4 text-white" />}
           </button>
 
           {/* Mobile menu trigger */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 rounded-xl bg-slate-100 dark:bg-vault-card text-slate-700 dark:text-slate-300"
+            className="p-2 text-white md:hidden"
           >
             {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
@@ -199,6 +248,33 @@ export const Navbar = () => {
               </Link>
             );
           })}
+        </div>
+      )}
+      {authMode && (
+        <div className="fixed inset-0 z-[60] bg-black/60 flex items-center justify-center p-4">
+          <form onSubmit={submitAuth} className="clay-card bg-white dark:bg-vault-surface w-full max-w-md p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-bold">{authMode === 'login' ? 'Sign in to SentinelRAG' : 'Create your account'}</h2>
+              <button type="button" onClick={() => setAuthMode(null)} className="text-slate-400">✕</button>
+            </div>
+            {authError && <div className="rounded-xl bg-red-50 text-red-700 p-3 text-xs">{authError}</div>}
+            {authMode === 'register' && (
+              <input required placeholder="Full name" value={authForm.fullName} onChange={(e) => setAuthForm({ ...authForm, fullName: e.target.value })} className="clay-input w-full" />
+            )}
+            <input required type="email" placeholder="Email" value={authForm.email} onChange={(e) => setAuthForm({ ...authForm, email: e.target.value })} className="clay-input w-full" />
+            <input required minLength={8} type="password" placeholder="Password (minimum 8 characters)" value={authForm.password} onChange={(e) => setAuthForm({ ...authForm, password: e.target.value })} className="clay-input w-full" />
+            {authMode === 'register' && (
+              <select value={authForm.department} onChange={(e) => setAuthForm({ ...authForm, department: e.target.value })} className="clay-input w-full">
+                <option>GENERAL</option><option>HR</option><option>FINANCE</option><option>SALES</option><option>RESEARCH</option>
+              </select>
+            )}
+            <button disabled={authSubmitting} className="neubrutalist-btn-primary w-full">
+              {authSubmitting ? 'Please wait...' : authMode === 'login' ? 'Sign in' : 'Create account'}
+            </button>
+            <button type="button" onClick={() => setAuthMode(authMode === 'login' ? 'register' : 'login')} className="w-full text-xs text-indigo-600">
+              {authMode === 'login' ? 'Need an account? Register' : 'Already registered? Sign in'}
+            </button>
+          </form>
         </div>
       )}
     </header>

@@ -7,9 +7,14 @@ from dotenv import load_dotenv
 load_dotenv()
 
 OPENAI_API_KEY = os.getenv("LLM_API_KEY", "") or os.getenv("OPENAI_API_KEY", "")
-LLM_MODEL = os.getenv("LLM_MODEL", "gpt-4o")
+LLM_BASE_URL = os.getenv("LLM_BASE_URL", "").strip() or None
+LLM_MODEL = os.getenv("LLM_MODEL", "llama-3.3-70b-versatile")
 
-client = OpenAI(api_key=OPENAI_API_KEY) if (OPENAI_API_KEY and not OPENAI_API_KEY.startswith("sk-your")) else None
+client = (
+    OpenAI(api_key=OPENAI_API_KEY, base_url=LLM_BASE_URL)
+    if (OPENAI_API_KEY and not OPENAI_API_KEY.startswith("sk-your"))
+    else None
+)
 
 class LLMGenerator:
     @staticmethod

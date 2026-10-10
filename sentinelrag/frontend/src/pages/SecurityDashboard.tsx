@@ -23,6 +23,7 @@ import {
   ResponsiveContainer, 
   Tooltip 
 } from 'recharts';
+import { useAuth } from '../context/AuthContext';
 
 interface SecurityEvent {
   id: string;
@@ -35,6 +36,12 @@ interface SecurityEvent {
 }
 
 export const SecurityDashboard = () => {
+  const { currentUser } = useAuth();
+  const [users, setUsers] = useState<any[]>([]);
+  const [roles, setRoles] = useState<any[]>([]);
+  const [newRole, setNewRole] = useState({ name: '', description: '' });
+  const [newMember, setNewMember] = useState({ full_name: '', email: '', department: 'GENERAL', role: 'EMPLOYEE' });
+  const [initialPassword, setInitialPassword] = useState<string | null>(null);
   const [stats, setStats] = useState<any>({
     total_queries: 1248,
     authorized_queries: 1180,
@@ -87,6 +94,45 @@ export const SecurityDashboard = () => {
   useEffect(() => {
     fetchDashboardData();
   }, []);
+
+  useEffect(() => {
+    if (currentUser?.role === 'ADMIN') {
+      api.get('/admin/users').then((res) => setUsers(res.data || [])).catch(() => setUsers([]));
+      api.get('/admin/roles').then((res) => setRoles(res.data || [])).catch(() => setRoles([]));
+    }
+  }, [currentUser]);
+
+  const updateUserRole = async (userId: string, role: string) => {
+    try {
+      await api.patch(`/admin/users/${userId}/role`, { role });
+      const res = await api.get('/admin/users');
+      setUsers(res.data || []);
+    } catch (err: any) {
+      alert(err?.response?.data?.detail || 'Could not update user role');
+    }
+  };
+
+  const createRole = async (event: React.FormEvent) => {
+    event.preventDefault();
+    try {
+      const res = await api.post('/admin/roles', newRole);
+      setRoles((current) => [...current, res.data]);
+      setNewRole({ name: '', description: '' });
+    } catch (err: any) {
+      const detail = err?.response?.data?.detail;
+      alert(typeof detail === 'string' ? detail : 'Could not create role');
+    }
+  };
+
+  const createMember = async (event: React.FormEvent) => {
+    event.preventDefault();
+    try {
+      const res = await api.post('/admin/members', newMember);
+      setUsers((current) => [...current, res.data.member]);
+      setInitialPassword(res.data.initial_password);
+      setNewMember({ full_name: '', email: '', department: 'GENERAL', role: roles[0]?.name || 'EMPLOYEE' });
+    } catch (err: any) { alert(err?.response?.data?.detail || 'Could not create member'); }
+  };
 
   const handleTestPromptGuard = async (promptToTest?: string) => {
     const text = promptToTest !== undefined ? promptToTest : testPrompt;
@@ -143,12 +189,65 @@ export const SecurityDashboard = () => {
 
         <button
           onClick={fetchDashboardData}
-          className="clay-btn text-xs flex items-center gap-2 self-end sm:self-auto"
+          className="neubrutalist-btn text-xs flex items-center gap-2 self-end sm:self-auto"
         >
           <RotateCcw className="w-3.5 h-3.5" />
           Refresh Telemetry
         </button>
       </div>
+
+      {currentUser?.role === 'ADMIN' && (
+        <section className="clay-card p-6 border border-slate-200/80 dark:border-vault-border">
+          <div className="flex items-center gap-2 mb-4">
+            <ShieldCheck className="w-5 h-5 text-indigo-600 dark:text-cyan-400" />
+            <div>
+              <h2 className="font-bold text-lg">User Role Management</h2>
+              <p className="text-xs text-slate-500">Only administrators can assign roles to registered users.</p>
+            </div>
+          </div>
+          <div className="space-y-2">
+            {users.map((user) => (
+              <div key={user.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 dark:border-vault-border p-3">
+                <div>
+                  <p className="text-sm font-bold">{user.full_name}</p>
+                  <p className="text-xs text-slate-500">{user.email} · {user.department}</p>
+                </div>
+                <select
+                  value={user.role}
+                  onChange={(event) => updateUserRole(user.id, event.target.value)}
+                  disabled={user.id === currentUser.id}
+                  className="clay-input text-xs"
+                  title={user.id === currentUser.id ? 'You cannot remove your own admin role' : 'Assign role'}
+                >
+                  <option value="ADMIN">ADMIN</option>
+                  <option value="HR_MANAGER">HR_MANAGER</option>
+                  <option value="FINANCE_MANAGER">FINANCE_MANAGER</option>
+                  <option value="EMPLOYEE">EMPLOYEE</option>
+                </select>
+              </div>
+            ))}
+          </div>
+          {initialPassword && <div className="mt-4 rounded-xl bg-amber-50 text-amber-800 p-3 text-xs">Initial password for the new member: <strong>{initialPassword}</strong>. They must change it after first login.</div>}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mt-6 pt-5 border-t border-slate-200 dark:border-vault-border">
+            <form onSubmit={createRole} className="space-y-2">
+              <h3 className="font-bold">Create custom role</h3>
+              <input required placeholder="Role name e.g. LEGAL_REVIEWER" value={newRole.name} onChange={(e) => setNewRole({ ...newRole, name: e.target.value })} className="clay-input w-full text-xs" />
+              <input placeholder="Description" value={newRole.description} onChange={(e) => setNewRole({ ...newRole, description: e.target.value })} className="clay-input w-full text-xs" />
+              <button className="neubrutalist-btn-primary text-xs">Add role</button>
+            </form>
+            <form onSubmit={createMember} className="space-y-2">
+              <h3 className="font-bold">Add organization member</h3>
+              <input required placeholder="Full name" value={newMember.full_name} onChange={(e) => setNewMember({ ...newMember, full_name: e.target.value })} className="clay-input w-full text-xs" />
+              <input required type="email" placeholder="Email" value={newMember.email} onChange={(e) => setNewMember({ ...newMember, email: e.target.value })} className="clay-input w-full text-xs" />
+              <div className="grid grid-cols-2 gap-2">
+                <select value={newMember.department} onChange={(e) => setNewMember({ ...newMember, department: e.target.value })} className="clay-input text-xs"><option>GENERAL</option><option>HR</option><option>FINANCE</option><option>SALES</option><option>RESEARCH</option></select>
+                <select value={newMember.role} onChange={(e) => setNewMember({ ...newMember, role: e.target.value })} className="clay-input text-xs">{roles.map((role) => <option key={role.name}>{role.name}</option>)}</select>
+              </div>
+              <button className="neubrutalist-btn-primary text-xs">Add member</button>
+            </form>
+          </div>
+        </section>
+      )}
 
       {/* Top 4 KPI Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
@@ -233,7 +332,7 @@ export const SecurityDashboard = () => {
             <button
               onClick={() => handleTestPromptGuard()}
               disabled={testingGuard}
-              className="clay-btn-primary text-xs flex items-center gap-2"
+              className="neubrutalist-btn-primary text-xs flex items-center gap-2"
             >
               <Play className="w-3.5 h-3.5" />
               {testingGuard ? "Running Heuristic Analysis..." : "Evaluate Prompt Safety"}

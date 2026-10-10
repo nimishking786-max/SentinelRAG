@@ -55,8 +55,16 @@ interface Message {
   injectionDetails?: any;
 }
 
+interface AuthorizedDocument {
+  id: string;
+  title: string;
+  file_type: string;
+  department: string;
+  sensitivity: string;
+}
+
 export const ChatPage = () => {
-  const { currentUser, switchUser, availableUsers } = useAuth();
+  const { currentUser } = useAuth();
   const [query, setQuery] = useState('');
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -68,7 +76,27 @@ export const ChatPage = () => {
   ]);
   const [loading, setLoading] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [authorizedDocuments, setAuthorizedDocuments] = useState<AuthorizedDocument[]>([]);
   const chatEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const fetchAuthorizedDocuments = async () => {
+      try {
+        const response = await api.get('/documents/');
+        if (mounted) setAuthorizedDocuments(response.data || []);
+      } catch (error) {
+        console.error('Failed to load authorized chat documents:', error);
+        if (mounted) setAuthorizedDocuments([]);
+      }
+    };
+
+    fetchAuthorizedDocuments();
+    return () => {
+      mounted = false;
+    };
+  }, [currentUser]);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -191,23 +219,6 @@ export const ChatPage = () => {
         </div>
 
         <div className="flex items-center gap-2.5">
-          {/* Quick Persona Switcher buttons */}
-          <div className="hidden lg:flex items-center gap-1.5 bg-slate-100 dark:bg-vault-card p-1 rounded-2xl">
-            {availableUsers.map(u => (
-              <button
-                key={u.id}
-                onClick={() => switchUser(u)}
-                className={`text-[11px] font-semibold px-2.5 py-1 rounded-xl transition-all ${
-                  currentUser?.id === u.id
-                    ? 'bg-white dark:bg-vault-surface text-indigo-600 dark:text-cyan-400 shadow-sm font-bold'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                }`}
-              >
-                {u.role.split('_')[0]}
-              </button>
-            ))}
-          </div>
-
           <button
             onClick={clearChat}
             title="Clear Chat"
@@ -224,6 +235,48 @@ export const ChatPage = () => {
           </button>
         </div>
       </div>
+
+      <section className="glass-panel border border-slate-200/80 p-4 dark:border-vault-border" aria-label="Your document access">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <div className="rounded-xl bg-indigo-100 p-2 text-indigo-600 dark:bg-vault-card dark:text-cyan-400">
+              <FileText className="h-4 w-4" />
+            </div>
+            <div>
+              <h2 className="text-sm font-bold text-slate-800 dark:text-slate-100">Your document access</h2>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                Only these authorized records can enter your chat context.
+              </p>
+            </div>
+          </div>
+          <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-400">
+            {authorizedDocuments.length} {authorizedDocuments.length === 1 ? 'document' : 'documents'} available
+          </span>
+        </div>
+
+        {authorizedDocuments.length > 0 ? (
+          <div className="mt-3 flex flex-wrap gap-2">
+            {authorizedDocuments.map((document) => (
+              <div
+                key={document.id}
+                className="flex min-w-0 items-center gap-2 rounded-xl border border-slate-200 bg-white/70 px-3 py-2 text-[11px] dark:border-vault-border dark:bg-vault-card/60"
+              >
+                <Shield className="h-3.5 w-3.5 shrink-0 text-indigo-500 dark:text-cyan-400" />
+                <div className="min-w-0">
+                  <div className="max-w-[230px] truncate font-semibold text-slate-700 dark:text-slate-200">{document.title}</div>
+                  <div className="text-[10px] uppercase tracking-wide text-slate-400">
+                    {document.sensitivity} · {document.department} · {document.file_type.toUpperCase()}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] text-amber-700 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-300">
+            No authorized documents are currently available for your role and department.
+          </p>
+        )}
+      </section>
 
       {/* Preset Queries Toolbar */}
       <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
@@ -436,7 +489,7 @@ export const ChatPage = () => {
         <button
           onClick={() => handleSend()}
           disabled={loading || !query.trim()}
-          className="clay-btn-primary !px-6 !py-3.5 rounded-2xl flex items-center justify-center gap-2"
+          className="neubrutalist-btn-primary !px-6 !py-3.5 rounded-[8px] flex items-center justify-center gap-2"
         >
           <Send className="w-4 h-4" />
           <span className="hidden sm:inline">Send</span>

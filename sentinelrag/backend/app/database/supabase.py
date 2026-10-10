@@ -45,6 +45,18 @@ class LocalTableQuery:
             inserted = self.store._insert_row(self.table_name, data)
             return LocalResult([inserted])
 
+    def update(self, data: Dict[str, Any]):
+        rows = self.store.tables.get(self.table_name, [])
+        updated = []
+        for row in rows:
+            if all(
+                (row.get(column) == value if operator == "eq" else row.get(column) in value)
+                for column, operator, value in self.filters
+            ):
+                row.update(data)
+                updated.append(dict(row))
+        return LocalResult(updated)
+
     def delete(self):
         # Apply filters to remove
         data = self.store.tables.get(self.table_name, [])
@@ -127,6 +139,7 @@ class LocalVaultStore:
                 "full_name": "Alex Vance (Chief Security Officer)",
                 "role": "ADMIN",
                 "department": "ADMIN",
+                "must_change_password": False,
                 "avatar_url": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150"
             },
             {
@@ -135,6 +148,7 @@ class LocalVaultStore:
                 "full_name": "Marcus Chen (VP of Finance)",
                 "role": "FINANCE_MANAGER",
                 "department": "FINANCE",
+                "must_change_password": False,
                 "avatar_url": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150"
             },
             {
@@ -143,6 +157,7 @@ class LocalVaultStore:
                 "full_name": "Sarah Jenkins (Head of People & HR)",
                 "role": "HR_MANAGER",
                 "department": "HR",
+                "must_change_password": False,
                 "avatar_url": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150"
             },
             {
@@ -151,8 +166,15 @@ class LocalVaultStore:
                 "full_name": "Rahul Sharma (Software Engineer)",
                 "role": "EMPLOYEE",
                 "department": "GENERAL",
+                "must_change_password": False,
                 "avatar_url": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150"
             }
+        ]
+        self.tables["roles"] = [
+            {"id": "role-admin", "name": "ADMIN", "description": "Full platform administration"},
+            {"id": "role-hr", "name": "HR_MANAGER", "description": "Human resources management"},
+            {"id": "role-finance", "name": "FINANCE_MANAGER", "description": "Finance management"},
+            {"id": "role-employee", "name": "EMPLOYEE", "description": "Standard employee access"},
         ]
 
         # 2. Documents
@@ -449,6 +471,19 @@ class SupabaseWrapper:
                 return LocalResult(filtered)
 
         return LocalRpc(self.local_store, params)
+
+    def upload_file(self, bucket: str, path: str, file_bytes: bytes, content_type: str) -> None:
+        if not self.live_client:
+            raise RuntimeError("Supabase Storage is not configured or unavailable")
+        self.live_client.storage.from_(bucket).upload(
+            path,
+            file_bytes,
+            {"content-type": content_type, "upsert": "false"},
+        )
+
+    def delete_file(self, bucket: str, path: str) -> None:
+        if self.live_client:
+            self.live_client.storage.from_(bucket).remove([path])
 
 
 _wrapper = SupabaseWrapper()

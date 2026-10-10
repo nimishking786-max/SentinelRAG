@@ -48,10 +48,21 @@ export const DocumentManagement = () => {
   const [uploadTitle, setUploadTitle] = useState('');
   const [uploadDept, setUploadDept] = useState('GENERAL');
   const [uploadSensitivity, setUploadSensitivity] = useState<'PUBLIC' | 'INTERNAL' | 'CONFIDENTIAL' | 'RESTRICTED'>('INTERNAL');
+  const [uploadAllowedRoles, setUploadAllowedRoles] = useState<string[]>([]);
+  const [availableRoles, setAvailableRoles] = useState<string[]>([]);
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [uploadTextContent, setUploadTextContent] = useState('');
   const [uploading, setUploading] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
+
+  const getApiErrorMessage = (error: any, fallback: string) => {
+    const detail = error?.response?.data?.detail;
+    if (typeof detail === 'string') return detail;
+    if (detail && typeof detail === 'object') {
+      return detail.message || JSON.stringify(detail);
+    }
+    return error?.message || fallback;
+  };
 
   const fetchDocuments = async () => {
     try {
@@ -64,6 +75,10 @@ export const DocumentManagement = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    api.get('/auth/roles').then((res) => setAvailableRoles((res.data || []).map((role: any) => role.name))).catch(() => setAvailableRoles(['ADMIN', 'HR_MANAGER', 'FINANCE_MANAGER', 'EMPLOYEE']));
+  }, []);
 
   useEffect(() => {
     fetchDocuments();
@@ -95,6 +110,7 @@ export const DocumentManagement = () => {
     formData.append('title', uploadTitle);
     formData.append('department', uploadDept);
     formData.append('sensitivity', uploadSensitivity);
+    formData.append('allowed_roles', uploadAllowedRoles.join(','));
 
     if (uploadFile) {
       formData.append('file', uploadFile);
@@ -112,13 +128,14 @@ export const DocumentManagement = () => {
       setUploadTitle('');
       setUploadTextContent('');
       setUploadFile(null);
+      setUploadAllowedRoles([]);
       fetchDocuments();
       setTimeout(() => {
         setUploadModalOpen(false);
         setUploadSuccess(null);
       }, 1500);
     } catch (err: any) {
-      alert(err.response?.data?.detail || "Upload failed. Verify your role permissions.");
+      alert(getApiErrorMessage(err, "Upload failed. Verify your role permissions."));
     } finally {
       setUploading(false);
     }
@@ -130,7 +147,7 @@ export const DocumentManagement = () => {
       await api.delete(`/documents/${docId}`);
       fetchDocuments();
     } catch (err: any) {
-      alert(err.response?.data?.detail || "Only ADMIN role can purge vault documents.");
+      alert(getApiErrorMessage(err, "Only ADMIN role can purge vault documents."));
     }
   };
 
@@ -166,7 +183,7 @@ export const DocumentManagement = () => {
         <div className="flex items-center gap-3 w-full sm:w-auto">
           <button
             onClick={() => setUploadModalOpen(true)}
-            className="clay-btn-primary flex items-center justify-center gap-2 text-sm w-full sm:w-auto"
+            className="neubrutalist-btn-primary flex items-center justify-center gap-2 text-sm w-full sm:w-auto"
           >
             <Plus className="w-4 h-4" />
             Ingest Document
@@ -419,6 +436,38 @@ export const DocumentManagement = () => {
 
               <div>
                 <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                  Allowed Roles
+                </label>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 mb-2">
+                  Select roles that can access this document. Leave all unchecked
+                  to use the selected sensitivity and department policy.
+                </p>
+                <div className="grid grid-cols-2 gap-2">
+                  {availableRoles.map((role) => (
+                    <label
+                      key={role}
+                      className="flex items-center gap-2 rounded-xl border border-slate-200 dark:border-vault-border px-3 py-2 text-[11px] font-semibold text-slate-700 dark:text-slate-300"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={uploadAllowedRoles.includes(role)}
+                        onChange={(e) => {
+                          setUploadAllowedRoles((current) =>
+                            e.target.checked
+                              ? [...current, role]
+                              : current.filter((selectedRole) => selectedRole !== role)
+                          );
+                        }}
+                        className="accent-indigo-600"
+                      />
+                      {role}
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
                   Or Paste Document Text Directly
                 </label>
                 <textarea
@@ -434,14 +483,14 @@ export const DocumentManagement = () => {
                 <button
                   type="button"
                   onClick={() => setUploadModalOpen(false)}
-                  className="clay-btn text-xs"
+                  className="neubrutalist-btn text-xs"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={uploading}
-                  className="clay-btn-primary text-xs flex items-center gap-2"
+                  className="neubrutalist-btn-primary text-xs flex items-center gap-2"
                 >
                   {uploading ? "Chunking & Embedding..." : "Ingest into Vault"}
                 </button>
@@ -515,7 +564,7 @@ export const DocumentManagement = () => {
             <div className="pt-2 flex justify-end">
               <button
                 onClick={() => setInspectorDoc(null)}
-                className="clay-btn text-xs"
+                className="neubrutalist-btn text-xs"
               >
                 Close Inspector
               </button>

@@ -6,6 +6,7 @@ from app.security.permissions import RBAC
 from app.security.audit import SecurityAuditLogger
 from app.ingestion.parser import DocumentParser
 from app.rag.embeddings import EmbeddingService
+import re
 import uuid
 
 router = APIRouter()
@@ -23,6 +24,7 @@ async def upload_document(
     """
     Uploads a document, parses text/pdf, chunks it, generates vector embeddings, and stores in vault.
     """
+    storage_path = None
     try:
         file_bytes = await file.read()
         
@@ -36,31 +38,56 @@ async def upload_document(
         if not pages:
             pages = [{"page_number": 1, "content": f"Uploaded document: {title}"}]
 
-        # 2. Chunk text
+        role_rows = supabase_client.table("roles").select("name").execute().data or []
+        valid_roles = {row["name"] for row in role_rows} | {"ALL"}
+        roles = [r.strip().upper() for r in allowed_roles.split(",") if r.strip()] if allowed_roles else []
+        invalid_roles = [role for role in roles if role not in valid_roles]
+        if invalid_roles:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Invalid allowed role(s): {', '.join(invalid_roles)}"
+            )
+
+        # 2. Store the original file in the private Supabase Storage bucket.
+        safe_filename = re.sub(r"[^A-Za-z0-9._-]", "_", file.filename or "document.txt")
+        doc_id = str(uuid.uuid4())
+        storage_path = f"{doc_id}/{safe_filename}"
+        try:
+            supabase_client.upload_file(
+                "documents",
+                storage_path,
+                file_bytes,
+                file.content_type or "application/octet-stream",
+            )
+        except Exception as storage_error:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail=f"Document storage unavailable: {storage_error}",
+            )
+
+        # 3. Chunk text
         chunks = DocumentParser.chunk_text(pages, chunk_size=200, overlap=40)
         if not chunks:
             chunks = [{"chunk_index": 0, "page_number": 1, "content": f"{title}: Content processed."}]
 
-        # 3. Generate embeddings
+        # 4. Generate embeddings
         chunk_texts = [c["content"] for c in chunks]
         embeddings = EmbeddingService.get_embeddings(chunk_texts)
 
-        # 4. Insert Document metadata
-        doc_id = str(uuid.uuid4())
+        # 5. Insert Document metadata
         doc_insert = supabase_client.table("documents").insert({
             "id": doc_id,
             "title": title,
             "description": description or f"Uploaded by {current_user.role}",
             "file_name": file.filename,
-            "file_path": f"documents/{doc_id}_{file.filename}",
+            "file_path": storage_path,
             "file_type": file_ext,
             "department": department,
             "sensitivity": sensitivity,
             "uploaded_by": current_user.user_id
         }).execute()
         
-        # 5. Insert Permissions
-        roles = [r.strip() for r in allowed_roles.split(",") if r.strip()] if allowed_roles else []
+        # 6. Insert Permissions
         if not roles:
             if sensitivity == "PUBLIC":
                 roles = ["ALL"]
@@ -75,7 +102,7 @@ async def upload_document(
                 "role": r
             }).execute()
         
-        # 6. Insert Chunks
+        # 7. Insert Chunks
         db_chunks = []
         for i, chunk in enumerate(chunks):
             db_chunks.append({
@@ -90,7 +117,7 @@ async def upload_document(
         if db_chunks:
             supabase_client.table("document_chunks").insert(db_chunks).execute()
 
-        # 7. Log Audit
+        # 8. Log Audit
         SecurityAuditLogger.log_audit(
             user_id=current_user.user_id,
             action="DOCUMENT_UPLOAD",
@@ -107,7 +134,19 @@ async def upload_document(
             "chunks_processed": len(db_chunks)
         }
         
+    except HTTPException:
+        if storage_path:
+            try:
+                supabase_client.delete_file("documents", storage_path)
+            except Exception as cleanup_error:
+                print(f"Document storage cleanup failed: {cleanup_error}")
+        raise
     except Exception as e:
+        if storage_path:
+            try:
+                supabase_client.delete_file("documents", storage_path)
+            except Exception as cleanup_error:
+                print(f"Document storage cleanup failed: {cleanup_error}")
         SecurityAuditLogger.log_event(
             user_id=current_user.user_id,
             event_type="DOCUMENT_UPLOAD_ERROR",
@@ -197,7 +236,16 @@ async def get_document_chunks(doc_id: str, current_user: TokenData = Depends(get
 
 @router.delete("/{doc_id}")
 async def delete_document(doc_id: str, current_user: TokenData = Depends(RBAC.require_role(["ADMIN"]))):
-    supabase_client.table("documents").eq("id", doc_id).delete()
+    documents = supabase_client.table("documents").select("file_path").eq("id", doc_id).execute().data or []
+    if documents and documents[0].get("file_path"):
+        try:
+            supabase_client.delete_file("documents", documents[0]["file_path"])
+        except Exception as storage_error:
+            raise HTTPException(
+                status_code=status.HTTP_502_BAD_GATEWAY,
+                detail=f"Could not remove the stored file: {storage_error}",
+            )
+    supabase_client.table("documents").eq("id", doc_id).delete().execute()
     supabase_client.table("document_chunks").eq("document_id", doc_id).delete()
     supabase_client.table("document_permissions").eq("document_id", doc_id).delete()
     return {"status": "deleted", "document_id": doc_id}

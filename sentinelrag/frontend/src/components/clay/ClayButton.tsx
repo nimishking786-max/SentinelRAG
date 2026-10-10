@@ -6,10 +6,10 @@ interface ClayButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> 
 
 export const ClayButton: React.FC<ClayButtonProps> = ({ className, variant = 'default', children, ...props }) => {
   const resolvedClass = variant === 'primary' 
-    ? 'clay-btn-primary' 
+    ? 'neubrutalist-btn-primary' 
     : variant === 'danger' 
-    ? 'clay-btn-danger' 
-    : 'clay-btn';
+    ? 'neubrutalist-btn-danger' 
+    : 'neubrutalist-btn';
 
   return (
     <button 

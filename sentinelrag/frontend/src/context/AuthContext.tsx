@@ -5,19 +5,24 @@ export interface UserProfile {
   id: string;
   email: string;
   full_name: string;
-  role: 'ADMIN' | 'HR_MANAGER' | 'FINANCE_MANAGER' | 'EMPLOYEE';
+  role: string;
   department: string;
   avatar_url?: string;
   access_token: string;
+  must_change_password?: boolean;
 }
 
 interface AuthContextType {
   currentUser: UserProfile | null;
   availableUsers: UserProfile[];
-  switchUser: (user: UserProfile) => void;
   darkMode: boolean;
   toggleDarkMode: () => void;
   loading: boolean;
+  login: (email: string, password: string) => Promise<void>;
+  register: (fullName: string, email: string, password: string, department: string) => Promise<void>;
+  logout: () => void;
+  changePassword: (currentPassword: string, newPassword: string) => Promise<void>;
+  updateAvatar: (file: File) => Promise<void>;
 }
 
 const defaultProfiles: UserProfile[] = [
@@ -62,10 +67,10 @@ const defaultProfiles: UserProfile[] = [
 const AuthContext = createContext<AuthContextType>({
   currentUser: null,
   availableUsers: [],
-  switchUser: () => {},
   darkMode: false,
   toggleDarkMode: () => {},
   loading: true
+  , login: async () => {}, register: async () => {}, logout: () => {}, changePassword: async () => {}, updateAvatar: async () => {}
 });
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -96,18 +101,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const res = await api.get('/auth/demo-users');
         if (res.data && res.data.length > 0) {
           setAvailableUsers(res.data);
-          const savedUserId = localStorage.getItem('sentinel_user_id');
-          const matched = res.data.find((u: UserProfile) => u.id === savedUserId);
-          const initial = matched || res.data[1]; // default to Marcus Chen (FINANCE_MANAGER) for demo
-          setCurrentUser(initial);
-          localStorage.setItem('token', initial.access_token);
-          localStorage.setItem('sentinel_user_id', initial.id);
-        } else {
-          setCurrentUser(defaultProfiles[1]);
+        }
+
+        const token = localStorage.getItem('token');
+        if (token) {
+          try {
+            const me = await api.get('/auth/me');
+            setCurrentUser({ ...me.data, access_token: token });
+          } catch {
+            localStorage.removeItem('token');
+            localStorage.removeItem('sentinel_user_id');
+          }
         }
       } catch (err) {
-        console.warn("Could not load /auth/demo-users, using local defaults:", err);
-        setCurrentUser(defaultProfiles[1]);
+        console.warn("Could not load /auth/demo-users:", err);
       } finally {
         setLoading(false);
       }
@@ -115,16 +122,53 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     fetchUsers();
   }, []);
 
-  const switchUser = (user: UserProfile) => {
+  const login = async (email: string, password: string) => {
+    const res = await api.post('/auth/login', { email, password });
+    const user = { ...res.data.user, access_token: res.data.access_token } as UserProfile;
     setCurrentUser(user);
-    if (user.access_token) {
-      localStorage.setItem('token', user.access_token);
-    }
+    localStorage.setItem('token', user.access_token);
     localStorage.setItem('sentinel_user_id', user.id);
   };
 
+  const register = async (fullName: string, email: string, password: string, department: string) => {
+    const res = await api.post('/auth/register', {
+      full_name: fullName,
+      email,
+      password,
+      department,
+    });
+    const user = { ...res.data.user, access_token: res.data.access_token } as UserProfile;
+    setCurrentUser(user);
+    setAvailableUsers((current) => [...current, user]);
+    localStorage.setItem('token', user.access_token);
+    localStorage.setItem('sentinel_user_id', user.id);
+  };
+
+  const changePassword = async (currentPassword: string, newPassword: string) => {
+    await api.post('/auth/change-password', { current_password: currentPassword, new_password: newPassword });
+    setCurrentUser((current) => current ? { ...current, must_change_password: false } : current);
+  };
+
+  const updateAvatar = async (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await api.post('/auth/profile/avatar', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    setCurrentUser((current) => current ? { ...current, avatar_url: response.data.avatar_url } : current);
+    setAvailableUsers((users) => users.map((user) => (
+      user.id === currentUser?.id ? { ...user, avatar_url: response.data.avatar_url } : user
+    )));
+  };
+
+  const logout = () => {
+    setCurrentUser(null);
+    localStorage.removeItem('token');
+    localStorage.removeItem('sentinel_user_id');
+  };
+
   return (
-    <AuthContext.Provider value={{ currentUser, availableUsers, switchUser, darkMode, toggleDarkMode, loading }}>
+    <AuthContext.Provider value={{ currentUser, availableUsers, darkMode, toggleDarkMode, loading, login, register, logout, changePassword, updateAvatar }}>
       {children}
     </AuthContext.Provider>
   );
