@@ -5,10 +5,11 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-OPENAI_API_KEY = os.getenv("LLM_API_KEY", "")
+OPENAI_API_KEY = os.getenv("EMBEDDINGS_API_KEY", "")
 EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "text-embedding-3-small")
+EMBEDDINGS_BASE_URL = os.getenv("EMBEDDINGS_BASE_URL", "").strip() or None
 
-client = OpenAI(api_key=OPENAI_API_KEY) if OPENAI_API_KEY else None
+client = OpenAI(api_key=OPENAI_API_KEY, base_url=EMBEDDINGS_BASE_URL) if OPENAI_API_KEY else None
 
 class EmbeddingService:
     @staticmethod

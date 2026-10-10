@@ -14,6 +14,7 @@ CREATE TABLE public.profiles (
     role user_role DEFAULT 'EMPLOYEE',
     department document_department DEFAULT 'GENERAL',
     avatar_url TEXT,
+    password_hash TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now()),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now())
 );
@@ -102,6 +103,12 @@ CREATE TABLE public.security_events (
     metadata JSONB,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now())
 );
+
+-- Private bucket for original uploaded documents. The backend uses the
+-- service-role key to upload and delete files after applying API permissions.
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('documents', 'documents', false)
+ON CONFLICT (id) DO UPDATE SET public = EXCLUDED.public;
 
 -- Note: Row Level Security (RLS) policies will be enforced at the API layer for simplicity,
 -- but we enable RLS on these tables as a best practice, with service_role bypass.

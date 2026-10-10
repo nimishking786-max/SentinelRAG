@@ -1,15 +1,100 @@
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 from typing import Dict, Any, List, Optional
+import uuid
 from app.database.supabase import supabase_client
 from app.security.prompt_guard import PromptGuard, PIIDetector
-from app.auth.auth import get_current_user, TokenData
+from app.auth.auth import get_current_user, TokenData, get_password_hash
+from app.security.permissions import RBAC
 import random
 
 router = APIRouter()
 
 class PromptGuardTestRequest(BaseModel):
     prompt: str
+
+class RoleUpdateRequest(BaseModel):
+    role: str
+
+class RoleCreateRequest(BaseModel):
+    name: str
+    description: str = ""
+
+class MemberCreateRequest(BaseModel):
+    email: str
+    full_name: str
+    department: str = "GENERAL"
+    role: str = "EMPLOYEE"
+
+@router.get("/roles")
+async def list_roles(current_user: TokenData = Depends(RBAC.require_role(["ADMIN"]))):
+    try:
+        return supabase_client.table("roles").select("*").execute().data or []
+    except Exception as exc:
+        raise HTTPException(
+            status_code=503,
+            detail="The roles table is not available. Run supabase/fix_dynamic_roles.sql in Supabase SQL Editor, then retry.",
+        ) from exc
+
+@router.post("/roles")
+async def create_role(req: RoleCreateRequest, current_user: TokenData = Depends(RBAC.require_role(["ADMIN"]))):
+    name = req.name.strip().upper().replace(" ", "_")
+    if not name or not name.replace("_", "").isalnum():
+        raise HTTPException(status_code=400, detail="Role name may contain only letters, numbers, and underscores")
+    try:
+        existing = supabase_client.table("roles").select("name").eq("name", name).execute().data or []
+    except Exception as exc:
+        raise HTTPException(
+            status_code=503,
+            detail="The roles table is not available. Run supabase/fix_dynamic_roles.sql in Supabase SQL Editor, then retry.",
+        ) from exc
+    if existing:
+        raise HTTPException(status_code=409, detail="Role already exists")
+    try:
+        created = supabase_client.table("roles").insert({"id": str(uuid.uuid4()), "name": name, "description": req.description.strip()}).execute().data or []
+    except Exception as exc:
+        raise HTTPException(
+            status_code=503,
+            detail="The roles table is not available. Run supabase/fix_dynamic_roles.sql in Supabase SQL Editor, then retry.",
+        ) from exc
+    return created[0]
+
+@router.post("/members")
+async def create_member(req: MemberCreateRequest, current_user: TokenData = Depends(RBAC.require_role(["ADMIN"]))):
+    email = req.email.strip().lower()
+    if not email or "@" not in email or not req.full_name.strip():
+        raise HTTPException(status_code=400, detail="Valid name and email are required")
+    if not supabase_client.table("roles").select("name").eq("name", req.role).execute().data:
+        raise HTTPException(status_code=400, detail="Role does not exist")
+    if supabase_client.table("profiles").select("id").eq("email", email).execute().data:
+        raise HTTPException(status_code=409, detail="A user with this email already exists")
+    created = supabase_client.table("profiles").insert({
+        "id": str(uuid.uuid4()), "email": email, "full_name": req.full_name.strip(),
+        "department": req.department, "role": req.role,
+        "password_hash": get_password_hash("Sentinel@123"), "must_change_password": True,
+    }).execute().data or []
+    if not created:
+        raise HTTPException(status_code=500, detail="Member could not be created")
+    return {"member": created[0], "initial_password": "Sentinel@123"}
+
+@router.get("/users")
+async def list_users(current_user: TokenData = Depends(RBAC.require_role(["ADMIN"]))):
+    return supabase_client.table("profiles").select("id,email,full_name,role,department,avatar_url,must_change_password").execute().data or []
+
+@router.patch("/users/{user_id}/role")
+async def update_user_role(
+    user_id: str,
+    req: RoleUpdateRequest,
+    current_user: TokenData = Depends(RBAC.require_role(["ADMIN"])),
+):
+    if not supabase_client.table("roles").select("name").eq("name", req.role).execute().data:
+        raise HTTPException(status_code=400, detail="Invalid role")
+    if user_id == current_user.user_id and req.role != "ADMIN":
+        raise HTTPException(status_code=400, detail="Admin cannot remove their own admin role")
+    updated = supabase_client.table("profiles").update({"role": req.role}).eq("id", user_id).execute().data or []
+    if not updated:
+        raise HTTPException(status_code=404, detail="User not found")
+    return updated[0]
 
 @router.get("/stats")
 async def get_security_stats():
